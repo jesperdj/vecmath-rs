@@ -20,6 +20,7 @@ use array_macro::array;
 use crate::NonInvertibleMatrixError;
 
 /// Dimension in 2D space.
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Dimension2 { X, Y }
 
 /// Point in 2D space.
@@ -70,50 +71,141 @@ pub trait ApplyTransform2<T> {
 // ===== Point2 ================================================================================================================================================
 
 impl Point2 {
+    /// Creates a new `Point2` with x and y coordinate values.
     pub const fn new(x: f32, y: f32) -> Point2 {
         Point2 { x, y }
     }
 
+    /// Returns a `Point2` which represents the origin: x = 0 and y = 0.
     pub const fn origin() -> Point2 {
         Point2::new(0.0, 0.0)
     }
 
+    /// Computes the distance between two points.
+    ///
+    /// If you only need to compare relative distances, consider using [`distance_squared`](#method.distance_squared) instead, which avoids a costly
+    /// square root computation.
     pub fn distance(self, p: Point2) -> f32 {
         (self - p).length()
     }
 
+    /// Computes the square of the distance between two points.
+    ///
+    /// Use this method instead of [`distance`](#method.distance) when possible, to avoid a costly square root computation.
     pub fn distance_squared(self, p: Point2) -> f32 {
         (self - p).length_squared()
     }
 
+    /// Returns the element-wise minimum between this point and the point `p`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Point2;
+    ///
+    /// let p1 = Point2::new(2.0, 1.0);
+    /// let p2 = Point2::new(4.0, -1.5);
+    /// assert_eq!(p1.min(p2), Point2::new(2.0, -1.5));
+    /// ```
     pub fn min(self, p: Point2) -> Point2 {
         Point2::new(f32::min(self.x, p.x), f32::min(self.y, p.y))
     }
 
+    /// Returns the element-wise maximum between this point and the point `p`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Point2;
+    ///
+    /// let p1 = Point2::new(2.0, 1.0);
+    /// let p2 = Point2::new(4.0, -1.5);
+    /// assert_eq!(p1.max(p2), Point2::new(4.0, 1.0));
+    /// ```
     pub fn max(self, p: Point2) -> Point2 {
         Point2::new(f32::max(self.x, p.x), f32::max(self.y, p.y))
     }
 
+    /// Returns the dimension with the minimum extent of this point.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::{Dimension2, Point2};
+    ///
+    /// let p = Point2::new(2.0, -3.0);
+    /// assert_eq!(p.min_dimension(), Dimension2::X);
+    /// ```
     pub fn min_dimension(self) -> Dimension2 {
         if self.x.abs() <= self.y.abs() { Dimension2::X } else { Dimension2::Y }
     }
 
+    /// Returns the dimension with the maximum extent of this point.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::{Dimension2, Point2};
+    ///
+    /// let p = Point2::new(2.0, -3.0);
+    /// assert_eq!(p.max_dimension(), Dimension2::Y);
+    /// ```
     pub fn max_dimension(self) -> Dimension2 {
         if self.x.abs() > self.y.abs() { Dimension2::X } else { Dimension2::Y }
     }
 
+    /// Returns the element-wise floor of this point.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Point2;
+    ///
+    /// let p = Point2::new(1.5, -2.25);
+    /// assert_eq!(p.floor(), Point2::new(1.0, -3.0));
+    /// ```
     pub fn floor(self) -> Point2 {
         Point2::new(self.x.floor(), self.y.floor())
     }
 
+    /// Returns the element-wise ceiling of this point.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Point2;
+    ///
+    /// let p = Point2::new(1.5, -2.25);
+    /// assert_eq!(p.ceil(), Point2::new(2.0, -2.0));
+    /// ```
     pub fn ceil(self) -> Point2 {
         Point2::new(self.x.ceil(), self.y.ceil())
     }
 
+    /// Returns the element-wise absolute value of this point.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Point2;
+    ///
+    /// let p = Point2::new(3.5, -2.0);
+    /// assert_eq!(p.abs(), Point2::new(3.5, 2.0));
+    /// ```
     pub fn abs(self) -> Point2 {
         Point2::new(self.x.abs(), self.y.abs())
     }
 
+    /// Returns a point with a permutation of the elements of this point.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::{Dimension2, Point2};
+    ///
+    /// let p = Point2::new(1.0, 2.0);
+    /// assert_eq!(p.permute(Dimension2::Y, Dimension2::X), Point2::new(2.0, 1.0));
+    /// ```
     pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Point2 {
         Point2::new(self[dim_x], self[dim_y])
     }
@@ -232,22 +324,27 @@ impl From<Vector2> for Point2 {
 // ===== Vector2 ===============================================================================================================================================
 
 impl Vector2 {
-    pub fn new(x: f32, y: f32) -> Vector2 {
+    /// Creates a new `Vector2` with x and y coordinate values.
+    pub const fn new(x: f32, y: f32) -> Vector2 {
         Vector2 { x, y }
     }
 
-    pub fn zero() -> Vector2 {
+    /// Returns a `Vector2` which represents the zero vector: x = 0 and y = 0.
+    pub const fn zero() -> Vector2 {
         Vector2::new(0.0, 0.0)
     }
 
-    pub fn x_axis() -> Vector2 {
+    /// Returns a `Vector2` which represents the x axis: x = 1 and y = 0.
+    pub const fn x_axis() -> Vector2 {
         Vector2::new(1.0, 0.0)
     }
 
-    pub fn y_axis() -> Vector2 {
+    /// Returns a `Vector2` which represents the y axis: x = 0 and y = 1.
+    pub const fn y_axis() -> Vector2 {
         Vector2::new(0.0, 1.0)
     }
 
+    /// Returns a `Vector2` which represents the axis specified by the dimension `dim`.
     pub fn axis(dim: Dimension2) -> Vector2 {
         match dim {
             Dimension2::X => Vector2::x_axis(),
@@ -255,50 +352,141 @@ impl Vector2 {
         }
     }
 
+    /// Returns the length of this vector.
+    ///
+    /// If you only need to compare relative vector lengths, consider using [`length_squared`](#method.length_squared) instead, which avoids a costly
+    /// square root computation.
     pub fn length(self) -> f32 {
         self.length_squared().sqrt()
     }
 
+    /// Returns the square of the length of this vector.
+    ///
+    /// Use this method instead of [`length`](#method.length) when possible, to avoid a costly square root computation.
     pub fn length_squared(self) -> f32 {
         self.x * self.x + self.y * self.y
     }
 
+    /// Returns a new vector which points in the same direction as this vector and which has length 1.
     pub fn normalize(self) -> Vector2 {
         self / self.length()
     }
 
+    /// Computes the dot product between this vector and the vector `v`.
     pub fn dot(self, v: Vector2) -> f32 {
         self.x * v.x + self.y * v.y
     }
 
+    /// Returns the element-wise minimum between this vector and the vector `v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Vector2;
+    ///
+    /// let v1 = Vector2::new(2.0, 1.0);
+    /// let v2 = Vector2::new(4.0, -1.5);
+    /// assert_eq!(v1.min(v2), Vector2::new(2.0, -1.5));
+    /// ```
     pub fn min(self, v: Vector2) -> Vector2 {
         Vector2::new(f32::min(self.x, v.x), f32::min(self.y, v.y))
     }
 
+    /// Returns the element-wise maximum between this vector and the vector `v`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Vector2;
+    ///
+    /// let v1 = Vector2::new(2.0, 1.0);
+    /// let v2 = Vector2::new(4.0, -1.5);
+    /// assert_eq!(v1.max(v2), Vector2::new(4.0, 1.0));
+    /// ```
     pub fn max(self, v: Vector2) -> Vector2 {
         Vector2::new(f32::max(self.x, v.x), f32::max(self.y, v.y))
     }
 
+    /// Returns the dimension with the minimum extent of this vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::{Dimension2, Vector2};
+    ///
+    /// let v = Vector2::new(2.0, -3.0);
+    /// assert_eq!(v.min_dimension(), Dimension2::X);
+    /// ```
     pub fn min_dimension(self) -> Dimension2 {
         if self.x.abs() <= self.y.abs() { Dimension2::X } else { Dimension2::Y }
     }
 
+    /// Returns the dimension with the maximum extent of this vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::{Dimension2, Vector2};
+    ///
+    /// let v = Vector2::new(2.0, -3.0);
+    /// assert_eq!(v.max_dimension(), Dimension2::Y);
+    /// ```
     pub fn max_dimension(self) -> Dimension2 {
         if self.x.abs() > self.y.abs() { Dimension2::X } else { Dimension2::Y }
     }
 
+    /// Returns the element-wise floor of this vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Vector2;
+    ///
+    /// let v = Vector2::new(1.5, -2.25);
+    /// assert_eq!(v.floor(), Vector2::new(1.0, -3.0));
+    /// ```
     pub fn floor(self) -> Vector2 {
         Vector2::new(self.x.floor(), self.y.floor())
     }
 
+    /// Returns the element-wise ceiling of this vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Vector2;
+    ///
+    /// let v = Vector2::new(1.5, -2.25);
+    /// assert_eq!(v.ceil(), Vector2::new(2.0, -2.0));
+    /// ```
     pub fn ceil(self) -> Vector2 {
         Vector2::new(self.x.ceil(), self.y.ceil())
     }
 
+    /// Returns the element-wise absolute value of this vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::Vector2;
+    ///
+    /// let v = Vector2::new(3.5, -2.0);
+    /// assert_eq!(v.abs(), Vector2::new(3.5, 2.0));
+    /// ```
     pub fn abs(self) -> Vector2 {
         Vector2::new(self.x.abs(), self.y.abs())
     }
 
+    /// Returns a vector with a permutation of the elements of this vector.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use vecmath::{Dimension2, Vector2};
+    ///
+    /// let v = Vector2::new(1.0, 2.0);
+    /// assert_eq!(v.permute(Dimension2::Y, Dimension2::X), Vector2::new(2.0, 1.0));
+    /// ```
     pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Vector2 {
         Vector2::new(self[dim_x], self[dim_y])
     }
@@ -415,22 +603,27 @@ impl From<Normal2> for Vector2 {
 // ===== Normal2 ===============================================================================================================================================
 
 impl Normal2 {
-    pub fn new(x: f32, y: f32) -> Normal2 {
+    /// Creates a new `Normal2` with x and y coordinate values.
+    pub const fn new(x: f32, y: f32) -> Normal2 {
         Normal2 { x, y }
     }
 
-    pub fn zero() -> Normal2 {
+    /// Returns a `Normal2` which represents the zero vector: x = 0 and y = 0.
+    pub const fn zero() -> Normal2 {
         Normal2::new(0.0, 0.0)
     }
 
-    pub fn x_axis() -> Normal2 {
+    /// Returns a `Normal2` which represents the x axis: x = 1 and y = 0.
+    pub const fn x_axis() -> Normal2 {
         Normal2::new(1.0, 0.0)
     }
 
-    pub fn y_axis() -> Normal2 {
+    /// Returns a `Normal2` which represents the y axis: x = 0 and y = 1.
+    pub const fn y_axis() -> Normal2 {
         Normal2::new(0.0, 1.0)
     }
 
+    /// Returns a `Normal2` which represents the axis specified by the dimension `dim`.
     pub fn axis(dim: Dimension2) -> Normal2 {
         match dim {
             Dimension2::X => Normal2::x_axis(),
@@ -438,18 +631,27 @@ impl Normal2 {
         }
     }
 
+    /// Returns the length of this normal.
+    ///
+    /// If you only need to compare relative normal lengths, consider using [`length_squared`](#method.length_squared) instead, which avoids a costly
+    /// square root computation.
     pub fn length(self) -> f32 {
         self.length_squared().sqrt()
     }
 
+    /// Returns the square of the length of this normal.
+    ///
+    /// Use this method instead of [`length`](#method.length) when possible, to avoid a costly square root computation.
     pub fn length_squared(self) -> f32 {
         self.x * self.x + self.y * self.y
     }
 
+    /// Returns a new normal which points in the same direction as this normal and which has length 1.
     pub fn normalize(self) -> Normal2 {
         self / self.length()
     }
 
+    /// Computes the dot product between this normal and the vector `v`.
     pub fn dot(self, v: Vector2) -> f32 {
         self.x * v.x + self.y * v.y
     }
@@ -590,10 +792,14 @@ impl From<Vector2> for Normal2 {
 // ===== Matrix3x3 =============================================================================================================================================
 
 impl Matrix3x3 {
+    /// Creates a new `Matrix3x3` with the given elements.
+    ///
+    /// Elements in a matrix are stored in row-major order.
     pub fn new(m: [f32; 9]) -> Matrix3x3 {
         Matrix3x3 { m }
     }
 
+    /// Returns a `Matrix3x3` which represents the identity matrix.
     pub fn identity() -> Matrix3x3 {
         Matrix3x3::new([
             1.0, 0.0, 0.0,
@@ -602,6 +808,7 @@ impl Matrix3x3 {
         ])
     }
 
+    /// Returns a `Matrix3x3` that translates along the vector `v`.
     pub fn translate(v: Vector2) -> Matrix3x3 {
         Matrix3x3::new([
             1.0, 0.0, v.x,
@@ -610,6 +817,7 @@ impl Matrix3x3 {
         ])
     }
 
+    /// Returns a `Matrix3x3` that rotates around the origin by the specified angle (in radians).
     pub fn rotate(angle: f32) -> Matrix3x3 {
         let (sin, cos) = angle.sin_cos();
 
@@ -620,6 +828,7 @@ impl Matrix3x3 {
         ])
     }
 
+    /// Returns a `Matrix3x3` that scales by factor `sx` along the x dimension and factor `sy` along the y dimension.
     pub fn scale(sx: f32, sy: f32) -> Matrix3x3 {
         Matrix3x3::new([
             sx, 0.0, 0.0,
@@ -628,6 +837,7 @@ impl Matrix3x3 {
         ])
     }
 
+    /// Returns a `Matrix3x3` that scales uniformly by factor `s` along all dimensions.
     pub fn scale_uniform(s: f32) -> Matrix3x3 {
         Matrix3x3::new([
             s, 0.0, 0.0,
@@ -636,27 +846,33 @@ impl Matrix3x3 {
         ])
     }
 
+    /// Returns the element at row `row` and column `col`.
     pub fn get(&self, row: usize, col: usize) -> f32 {
         self.m[row * 3 + col]
     }
 
+    /// Returns a mutable reference to the element at row `row` and column `col`.
     pub fn get_mut(&mut self, row: usize, col: usize) -> &mut f32 {
         &mut self.m[row * 3 + col]
     }
 
+    /// Sets the element at row `row` and column `col` to the specified value.
     pub fn set(&mut self, row: usize, col: usize, value: f32) {
         self.m[row * 3 + col] = value;
     }
 
+    /// Returns the row specified by the given index.
     pub fn row(&self, index: usize) -> [f32; 3] {
         let i = index * 3;
         [self.m[i], self.m[i + 1], self.m[i + 2]]
     }
 
+    /// Returns the column specified by the given index.
     pub fn column(&self, index: usize) -> [f32; 3] {
         [self.m[index], self.m[index + 3], self.m[index + 6]]
     }
 
+    /// Returns the transpose of this matrix.
     pub fn transpose(&self) -> Matrix3x3 {
         Matrix3x3::new([
             self.m[0], self.m[3], self.m[6],
@@ -665,6 +881,9 @@ impl Matrix3x3 {
         ])
     }
 
+    /// Computes the inverse of this matrix.
+    ///
+    /// If the matrix is singular, a `NonInvertibleMatrixError` is returned.
     pub fn inverse(&self) -> Result<Matrix3x3, NonInvertibleMatrixError> {
         let det = self.m[0] * self.m[4] * self.m[8] + self.m[1] * self.m[5] * self.m[6] + self.m[2] * self.m[3] * self.m[7]
             - self.m[2] * self.m[4] * self.m[6] - self.m[1] * self.m[3] * self.m[8] - self.m[0] * self.m[5] * self.m[7];
@@ -794,39 +1013,53 @@ impl Transform2 {
         Transform2 { forward, inverse }
     }
 
+    /// Returns a `Transform2` which represents the identity transform.
     pub fn identity() -> Transform2 {
         let forward = Arc::new(Matrix3x3::identity());
         let inverse = forward.clone();
         Transform2::new(forward, inverse)
     }
 
+    /// Returns a `Transform2` that translates along the vector `v`.
     pub fn translate(v: Vector2) -> Transform2 {
         Transform2::new(Arc::new(Matrix3x3::translate(v)), Arc::new(Matrix3x3::translate(-v)))
     }
 
+    /// Returns a `Transform2` that rotates around the origin by the specified angle (in radians).
     pub fn rotate(angle: f32) -> Transform2 {
         let forward = Matrix3x3::rotate(angle);
         let inverse = forward.transpose();
         Transform2::new(Arc::new(forward), Arc::new(inverse))
     }
 
+    /// Returns a `Transform2` that scales by factor `sx` along the x dimension and factor `sy` along the y dimension.
     pub fn scale(sx: f32, sy: f32) -> Transform2 {
         Transform2::new(Arc::new(Matrix3x3::scale(sx, sy)), Arc::new(Matrix3x3::scale(1.0 / sx, 1.0 / sy)))
     }
 
+    /// Returns a `Transform2` that scales uniformly by factor `s` along all dimensions.
     pub fn scale_uniform(s: f32) -> Transform2 {
         Transform2::new(Arc::new(Matrix3x3::scale_uniform(s)), Arc::new(Matrix3x3::scale_uniform(1.0 / s)))
     }
 
+    /// Creates a `Transform2` from a matrix.
+    ///
+    /// The inverse of the matrix is computed. If the matrix is singular, a `NonInvertibleMatrixError` is returned.
     pub fn from_matrix(forward: Matrix3x3) -> Result<Transform2, NonInvertibleMatrixError> {
         let inverse = forward.inverse()?;
         Ok(Transform2::new(Arc::new(forward), Arc::new(inverse)))
     }
 
+    /// Combines this transform with another transform.
+    ///
+    /// The result is a transform that first applies this transform, followed by the specified transform.
     pub fn and_then(&self, transform: &Transform2) -> Transform2 {
         Transform2::new(Arc::new(&*transform.forward * &*self.forward), Arc::new(&*self.inverse * &*transform.inverse))
     }
 
+    /// Returns the inverse of this transform.
+    ///
+    /// This is a cheap operation; no matrix inverse needs to be computed.
     pub fn inverse(&self) -> Transform2 {
         Transform2::new(self.inverse.clone(), self.forward.clone())
     }
@@ -866,7 +1099,7 @@ mod tests {
     // use super::*;
 
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn todo() {
+        // TODO: Add unit tests
     }
 }
