@@ -2572,10 +2572,456 @@ impl Transform3 {
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
+    use super::*;
 
     #[test]
-    fn todo() {
-        // TODO: Add unit tests
+    fn scalar_min() {
+        let a: Scalar = -1.0;
+        let b: Scalar = 2.0;
+        assert_eq!(min(a, b), -1.0);
     }
+
+    #[test]
+    fn scalar_max() {
+        let a: Scalar = -1.0;
+        let b: Scalar = 2.0;
+        assert_eq!(max(a, b), 2.0);
+    }
+
+    #[test]
+    fn point2_new() {
+        let p = Point2::new(-1.0, 2.0);
+        assert_eq!(p.x, -1.0);
+        assert_eq!(p.y, 2.0);
+    }
+
+    #[test]
+    fn point2_origin() {
+        let p = Point2::origin();
+        assert_eq!(p.x, 0.0);
+        assert_eq!(p.y, 0.0);
+    }
+
+    #[test]
+    fn point2_min_dimension() {
+        assert_eq!(Point2::new(-1.0, 2.0).min_dimension(), Dimension2::X);
+        assert_eq!(Point2::new(-3.0, 2.0).min_dimension(), Dimension2::Y);
+    }
+
+    #[test]
+    fn point2_max_dimension() {
+        assert_eq!(Point2::new(-1.0, 2.0).max_dimension(), Dimension2::Y);
+        assert_eq!(Point2::new(-3.0, 2.0).max_dimension(), Dimension2::X);
+    }
+
+    #[test]
+    fn point2_floor() {
+        assert_eq!(Point2::new(-1.3, 2.6).floor(), Point2::new(-2.0, 2.0));
+    }
+
+    #[test]
+    fn point2_ceil() {
+        assert_eq!(Point2::new(-1.3, 2.6).ceil(), Point2::new(-1.0, 3.0));
+    }
+
+    #[test]
+    fn point2_round() {
+        assert_eq!(Point2::new(-1.6, 2.3).round(), Point2::new(-2.0, 2.0));
+    }
+
+    #[test]
+    fn point2_trunc() {
+        assert_eq!(Point2::new(-1.3, 2.6).trunc(), Point2::new(-1.0, 2.0));
+    }
+
+    #[test]
+    fn point2_fract() {
+        assert_eq!(Point2::new(-1.25, 2.5).fract(), Point2::new(-0.25, 0.5));
+    }
+
+    #[test]
+    fn point2_abs() {
+        assert_eq!(Point2::new(-1.3, 2.6).abs(), Point2::new(1.3, 2.6));
+    }
+
+    #[test]
+    fn point2_permute() {
+        assert_eq!(Point2::new(1.0, 2.0).permute(Dimension2::X, Dimension2::X), Point2::new(1.0, 1.0));
+        assert_eq!(Point2::new(1.0, 2.0).permute(Dimension2::X, Dimension2::Y), Point2::new(1.0, 2.0));
+        assert_eq!(Point2::new(1.0, 2.0).permute(Dimension2::Y, Dimension2::X), Point2::new(2.0, 1.0));
+        assert_eq!(Point2::new(1.0, 2.0).permute(Dimension2::Y, Dimension2::Y), Point2::new(2.0, 2.0));
+    }
+
+    #[test]
+    fn point2_min() {
+        assert_eq!(min(Point2::new(-1.0, 2.0), Point2::new(-3.0, 2.5)), Point2::new(-3.0, 2.0));
+    }
+
+    #[test]
+    fn point2_max() {
+        assert_eq!(max(Point2::new(-1.0, 2.0), Point2::new(-3.0, 2.5)), Point2::new(-1.0, 2.5));
+    }
+
+    #[test]
+    fn point2_distance() {
+        assert_eq!(distance(Point2::new(4.0, 1.0), Point2::new(1.0, 5.0)), 5.0);
+    }
+
+    #[test]
+    fn point2_closest() {
+        let p1 = Point2::new(4.0, 1.0);
+        let p2 = Point2::new(1.0, 5.0);
+        assert_eq!(Point2::new(-1.0, 2.0).closest(p1, p2), p2);
+    }
+
+    #[test]
+    fn point2_farthest() {
+        let p1 = Point2::new(4.0, 1.0);
+        let p2 = Point2::new(1.0, 5.0);
+        assert_eq!(Point2::new(-1.0, 2.0).farthest(p1, p2), p1);
+    }
+
+    #[test]
+    fn point2_index() {
+        let p = Point2::new(1.0, 2.0);
+        assert_eq!(p[Dimension2::X], 1.0);
+        assert_eq!(p[Dimension2::Y], 2.0);
+    }
+
+    #[test]
+    fn point2_index_mut() {
+        let mut p = Point2::new(1.0, 2.0);
+        p[Dimension2::X] = 3.0;
+        p[Dimension2::Y] = -1.0;
+        assert_eq!(p, Point2::new(3.0, -1.0));
+    }
+
+    #[test]
+    fn point2_add_vector2() {
+        let p = Point2::new(1.0, 2.0);
+        let v = Vector2::new(-0.5, 1.5);
+        assert_eq!(p + v, Point2::new(0.5, 3.5));
+    }
+
+    #[test]
+    fn point2_add_assign_vector2() {
+        let mut p = Point2::new(1.0, 2.0);
+        let v = Vector2::new(-0.5, 1.5);
+        p += v;
+        assert_eq!(p, Point2::new(0.5, 3.5));
+    }
+
+    #[test]
+    fn point2_sub_vector2() {
+        let p = Point2::new(1.0, 2.0);
+        let v = Vector2::new(-0.5, 1.5);
+        assert_eq!(p - v, Point2::new(1.5, 0.5));
+    }
+
+    #[test]
+    fn point2_sub_assign_vector2() {
+        let mut p = Point2::new(1.0, 2.0);
+        let v = Vector2::new(-0.5, 1.5);
+        p -= v;
+        assert_eq!(p, Point2::new(1.5, 0.5));
+    }
+
+    #[test]
+    fn point2_sub_point2() {
+        let p1 = Point2::new(4.0, 2.0);
+        let p2 = Point2::new(1.0, 5.0);
+        assert_eq!(p1 - p2, Vector2::new(3.0, -3.0));
+    }
+
+    #[test]
+    fn point2_neg() {
+        assert_eq!(-Point2::new(1.0, -2.0), Point2::new(-1.0, 2.0));
+    }
+
+    #[test]
+    fn point2_mul_scalar() {
+        assert_eq!(Point2::new(2.5, -1.5) * 2.0, Point2::new(5.0, -3.0));
+    }
+
+    #[test]
+    fn scalar_mul_point2() {
+        assert_eq!(2.0 * Point2::new(2.5, -1.5), Point2::new(5.0, -3.0));
+    }
+
+    #[test]
+    fn point2_mul_assign_scalar() {
+        let mut p = Point2::new(2.5, -1.5);
+        p *= 2.0;
+        assert_eq!(p, Point2::new(5.0, -3.0));
+    }
+
+    #[test]
+    fn point2_div_scalar() {
+        assert_eq!(Point2::new(2.5, -1.5) / 2.0, Point2::new(1.25, -0.75));
+    }
+
+    #[test]
+    fn point2_div_assign_scalar() {
+        let mut p = Point2::new(2.5, -1.5);
+        p /= 2.0;
+        assert_eq!(p, Point2::new(1.25, -0.75));
+    }
+
+    #[test]
+    fn point2_from_vector2() {
+        let p = Point2::from(Vector2::new(1.0, 2.0));
+        assert_eq!(p, Point2::new(1.0, 2.0));
+    }
+
+    #[test]
+    fn vector2_new() {}
+
+    #[test]
+    fn vector2_zero() {}
+
+    #[test]
+    fn vector2_x_axis() {}
+
+    #[test]
+    fn vector2_y_axis() {}
+
+    #[test]
+    fn vector2_axis() {}
+
+    #[test]
+    fn vector2_normalize() {}
+
+    #[test]
+    fn vector2_min_dimension() {}
+
+    #[test]
+    fn vector2_max_dimension() {}
+
+    #[test]
+    fn vector2_floor() {}
+
+    #[test]
+    fn vector2_ceil() {}
+
+    #[test]
+    fn vector2_round() {}
+
+    #[test]
+    fn vector2_trunc() {}
+
+    #[test]
+    fn vector2_fract() {}
+
+    #[test]
+    fn vector2_abs() {}
+
+    #[test]
+    fn vector2_permute() {}
+
+    #[test]
+    fn vector2_min() {}
+
+    #[test]
+    fn vector2_max() {}
+
+    #[test]
+    fn vector2_length() {}
+
+    #[test]
+    fn vector2_shortest() {}
+
+    #[test]
+    fn vector2_longest() {}
+
+    #[test]
+    fn vector2_dot_vector2() {}
+
+    #[test]
+    fn vector2_index() {}
+
+    #[test]
+    fn vector2_index_mut() {}
+
+    #[test]
+    fn vector2_add_vector2() {}
+
+    #[test]
+    fn vector2_add_assign_vector2() {}
+
+    #[test]
+    fn vector2_sub_vector2() {}
+
+    #[test]
+    fn vector2_sub_assign_vector2() {}
+
+    #[test]
+    fn vector2_neg() {}
+
+    #[test]
+    fn vector2_mul_scalar() {}
+
+    #[test]
+    fn scalar_mul_vector2() {}
+
+    #[test]
+    fn vector2_mul_assign_scalar() {}
+
+    #[test]
+    fn vector2_div_scalar() {}
+
+    #[test]
+    fn vector2_div_assign_scalar() {}
+
+    #[test]
+    fn vector2_from_point2() {}
+
+    #[test]
+    fn ray2_new() {}
+
+    #[test]
+    fn ray2_at() {}
+
+    #[test]
+    fn bounding_box2_new() {}
+
+    #[test]
+    fn bounding_box2_empty() {}
+
+    #[test]
+    fn bounding_box2_infinite() {}
+
+    #[test]
+    fn bounding_box2_width() {}
+
+    #[test]
+    fn bounding_box2_height() {}
+
+    #[test]
+    fn bounding_box2_extent() {}
+
+    #[test]
+    fn bounding_box2_min_dimension() {}
+
+    #[test]
+    fn bounding_box2_max_dimension() {}
+
+    #[test]
+    fn bounding_box2_area() {}
+
+    #[test]
+    fn bounding_box2_center() {}
+
+    #[test]
+    fn bounding_box2_corner() {}
+
+    #[test]
+    fn bounding_box2_diagonal() {}
+
+    #[test]
+    fn bounding_box2_overlaps() {}
+
+    #[test]
+    fn bounding_box2_is_inside() {}
+
+    #[test]
+    fn bounding_box2_intersect_ray() {}
+
+    #[test]
+    fn bounding_box2_union_bounding_box2() {}
+
+    #[test]
+    fn bounding_box2_union_point2() {}
+
+    #[test]
+    fn bounding_box2_intersection_bounding_box2() {}
+
+    #[test]
+    fn matrix3x3_new() {}
+
+    #[test]
+    fn matrix3x3_identity() {}
+
+    #[test]
+    fn matrix3x3_translate() {}
+
+    #[test]
+    fn matrix3x3_rotate() {}
+
+    #[test]
+    fn matrix3x3_scale() {}
+
+    #[test]
+    fn matrix3x3_scale_uniform() {}
+
+    #[test]
+    fn matrix3x3_get() {}
+
+    #[test]
+    fn matrix3x3_get_mut() {}
+
+    #[test]
+    fn matrix3x3_set() {}
+
+    #[test]
+    fn matrix3x3_transpose() {}
+
+    #[test]
+    fn matrix3x3_inverse() {}
+
+    #[test]
+    fn matrix3x3_mul_scalar() {}
+
+    #[test]
+    fn scalar_mul_matrix3x3() {}
+
+    #[test]
+    fn matrix3x3_mul_assign_scalar() {}
+
+    #[test]
+    fn matrix3x3_div_scalar() {}
+
+    #[test]
+    fn matrix3x3_div_assign_scalar() {}
+
+    #[test]
+    fn matrix3x3_mul_point2() {}
+
+    #[test]
+    fn point2_mul_matrix3x3() {}
+
+    #[test]
+    fn matrix3x3_mul_vector2() {}
+
+    #[test]
+    fn vector2_mul_matrix3x3() {}
+
+    #[test]
+    fn matrix3x3_mul_matrix3x3() {}
+
+    #[test]
+    fn transform2_new() {}
+
+    #[test]
+    fn transform2_from_matrix() {}
+
+    #[test]
+    fn transform2_identity() {}
+
+    #[test]
+    fn transform2_translate() {}
+
+    #[test]
+    fn transform2_rotate() {}
+
+    #[test]
+    fn transform2_scale() {}
+
+    #[test]
+    fn transform2_scale_uniform() {}
+
+    #[test]
+    fn transform2_and_then() {}
+
+    #[test]
+    fn transform2_inverse() {}
 }
