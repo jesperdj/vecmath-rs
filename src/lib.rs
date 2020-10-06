@@ -840,7 +840,7 @@ impl BoundingBox2 {
     pub fn overlaps(&self, bb: &BoundingBox2) -> bool {
         //@formatter:off
         self.max.x >= bb.min.x && self.min.x <= bb.max.x &&
-            self.max.y >= bb.min.y && self.min.y <= bb.max.y
+        self.max.y >= bb.min.y && self.min.y <= bb.max.y
         //@formatter:on
     }
 
@@ -848,7 +848,7 @@ impl BoundingBox2 {
     pub fn is_inside(&self, p: Point2) -> bool {
         //@formatter:off
         p.x >= self.min.x && p.x <= self.max.x &&
-            p.y >= self.min.y && p.y <= self.max.y
+        p.y >= self.min.y && p.y <= self.max.y
         //@formatter:on
     }
 
@@ -1000,16 +1000,22 @@ impl Matrix3x3 {
 
     /// Returns an element at a row and column of the matrix.
     pub fn get(&self, row: usize, col: usize) -> Scalar {
+        debug_assert!(row < 3, "Invalid row index: {}", row);
+        debug_assert!(col < 3, "Invalid column index: {}", row);
         self.m[row * 3 + col]
     }
 
     /// Returns a mutable reference to an element at a row and column of the matrix.
     pub fn get_mut(&mut self, row: usize, col: usize) -> &mut Scalar {
+        debug_assert!(row < 3, "Invalid row index: {}", row);
+        debug_assert!(col < 3, "Invalid column index: {}", row);
         &mut self.m[row * 3 + col]
     }
 
     /// Sets the value of an element at a row and column of the matrix.
     pub fn set(&mut self, row: usize, col: usize, value: Scalar) {
+        debug_assert!(row < 3, "Invalid row index: {}", row);
+        debug_assert!(col < 3, "Invalid column index: {}", row);
         self.m[row * 3 + col] = value;
     }
 
@@ -2090,8 +2096,8 @@ impl BoundingBox3 {
     pub fn overlaps(&self, bb: &BoundingBox3) -> bool {
         //@formatter:off
         self.max.x >= bb.min.x && self.min.x <= bb.max.x &&
-            self.max.y >= bb.min.y && self.min.y <= bb.max.y &&
-            self.max.z >= bb.min.z && self.min.z <= bb.max.z
+        self.max.y >= bb.min.y && self.min.y <= bb.max.y &&
+        self.max.z >= bb.min.z && self.min.z <= bb.max.z
         //@formatter:on
     }
 
@@ -2099,8 +2105,8 @@ impl BoundingBox3 {
     pub fn is_inside(&self, p: Point3) -> bool {
         //@formatter:off
         p.x >= self.min.x && p.x <= self.max.x &&
-            p.y >= self.min.y && p.y <= self.max.y &&
-            p.z >= self.min.z && p.z <= self.max.z
+        p.y >= self.min.y && p.y <= self.max.y &&
+        p.z >= self.min.z && p.z <= self.max.z
         //@formatter:on
     }
 
@@ -2324,16 +2330,22 @@ impl Matrix4x4 {
 
     /// Returns an element at a row and column of the matrix.
     pub fn get(&self, row: usize, col: usize) -> Scalar {
+        debug_assert!(row < 4, "Invalid row index: {}", row);
+        debug_assert!(col < 4, "Invalid column index: {}", row);
         self.m[row * 4 + col]
     }
 
     /// Returns a mutable reference to an element at a row and column of the matrix.
     pub fn get_mut(&mut self, row: usize, col: usize) -> &mut Scalar {
+        debug_assert!(row < 4, "Invalid row index: {}", row);
+        debug_assert!(col < 4, "Invalid column index: {}", row);
         &mut self.m[row * 4 + col]
     }
 
     /// Sets the value of an element at a row and column of the matrix.
     pub fn set(&mut self, row: usize, col: usize, value: Scalar) {
+        debug_assert!(row < 4, "Invalid row index: {}", row);
+        debug_assert!(col < 4, "Invalid column index: {}", row);
         self.m[row * 4 + col] = value;
     }
 
@@ -2568,7 +2580,7 @@ impl Transform3 {
     }
 }
 
-// ===== Unit tests ============================================================================================================================================
+// ===== Tests =================================================================================================================================================
 
 #[cfg(test)]
 mod tests {
@@ -2576,16 +2588,16 @@ mod tests {
 
     #[test]
     fn scalar_min() {
-        let a: Scalar = -1.0;
-        let b: Scalar = 2.0;
-        assert_eq!(min(a, b), -1.0);
+        let s1: Scalar = -1.0;
+        let s2: Scalar = 2.0;
+        assert_eq!(min(s1, s2), -1.0);
     }
 
     #[test]
     fn scalar_max() {
-        let a: Scalar = -1.0;
-        let b: Scalar = 2.0;
-        assert_eq!(max(a, b), 2.0);
+        let s1: Scalar = -1.0;
+        let s2: Scalar = 2.0;
+        assert_eq!(max(s1, s2), 2.0);
     }
 
     #[test]
@@ -2774,154 +2786,324 @@ mod tests {
     }
 
     #[test]
-    fn vector2_new() {}
+    fn vector2_new() {
+        let v = Vector2::new(-1.0, 2.0);
+        assert_eq!(v.x, -1.0);
+        assert_eq!(v.y, 2.0);
+    }
 
     #[test]
-    fn vector2_zero() {}
+    fn vector2_zero() {
+        let v = Vector2::zero();
+        assert_eq!(v.x, 0.0);
+        assert_eq!(v.y, 0.0);
+    }
 
     #[test]
-    fn vector2_x_axis() {}
+    fn vector2_x_axis() {
+        let v = Vector2::x_axis();
+        assert_eq!(v.x, 1.0);
+        assert_eq!(v.y, 0.0);
+    }
 
     #[test]
-    fn vector2_y_axis() {}
+    fn vector2_y_axis() {
+        let v = Vector2::y_axis();
+        assert_eq!(v.x, 0.0);
+        assert_eq!(v.y, 1.0);
+    }
 
     #[test]
-    fn vector2_axis() {}
+    fn vector2_axis() {
+        assert_eq!(Vector2::axis(Dimension2::X), Vector2::x_axis());
+        assert_eq!(Vector2::axis(Dimension2::Y), Vector2::y_axis());
+    }
 
     #[test]
-    fn vector2_normalize() {}
+    fn vector2_normalize() {
+        let v = Vector2::new(3.0, -2.0);
+        assert_eq!(v.normalize(), v / Scalar::sqrt(13.0));
+    }
 
     #[test]
-    fn vector2_min_dimension() {}
+    fn vector2_min_dimension() {
+        assert_eq!(Vector2::new(-1.0, 2.0).min_dimension(), Dimension2::X);
+        assert_eq!(Vector2::new(-3.0, 2.0).min_dimension(), Dimension2::Y);
+    }
 
     #[test]
-    fn vector2_max_dimension() {}
+    fn vector2_max_dimension() {
+        assert_eq!(Vector2::new(-1.0, 2.0).max_dimension(), Dimension2::Y);
+        assert_eq!(Vector2::new(-3.0, 2.0).max_dimension(), Dimension2::X);
+    }
 
     #[test]
-    fn vector2_floor() {}
+    fn vector2_floor() {
+        assert_eq!(Vector2::new(-1.3, 2.6).floor(), Vector2::new(-2.0, 2.0));
+    }
 
     #[test]
-    fn vector2_ceil() {}
+    fn vector2_ceil() {
+        assert_eq!(Vector2::new(-1.3, 2.6).ceil(), Vector2::new(-1.0, 3.0));
+    }
 
     #[test]
-    fn vector2_round() {}
+    fn vector2_round() {
+        assert_eq!(Vector2::new(-1.6, 2.3).round(), Vector2::new(-2.0, 2.0));
+    }
 
     #[test]
-    fn vector2_trunc() {}
+    fn vector2_trunc() {
+        assert_eq!(Vector2::new(-1.3, 2.6).trunc(), Vector2::new(-1.0, 2.0));
+    }
 
     #[test]
-    fn vector2_fract() {}
+    fn vector2_fract() {
+        assert_eq!(Vector2::new(-1.25, 2.5).fract(), Vector2::new(-0.25, 0.5));
+    }
 
     #[test]
-    fn vector2_abs() {}
+    fn vector2_abs() {
+        assert_eq!(Vector2::new(-1.3, 2.6).abs(), Vector2::new(1.3, 2.6));
+    }
 
     #[test]
-    fn vector2_permute() {}
+    fn vector2_permute() {
+        assert_eq!(Vector2::new(1.0, 2.0).permute(Dimension2::X, Dimension2::X), Vector2::new(1.0, 1.0));
+        assert_eq!(Vector2::new(1.0, 2.0).permute(Dimension2::X, Dimension2::Y), Vector2::new(1.0, 2.0));
+        assert_eq!(Vector2::new(1.0, 2.0).permute(Dimension2::Y, Dimension2::X), Vector2::new(2.0, 1.0));
+        assert_eq!(Vector2::new(1.0, 2.0).permute(Dimension2::Y, Dimension2::Y), Vector2::new(2.0, 2.0));
+    }
 
     #[test]
-    fn vector2_min() {}
+    fn vector2_min() {
+        assert_eq!(min(Vector2::new(-1.0, 2.0), Vector2::new(-3.0, 2.5)), Vector2::new(-3.0, 2.0));
+    }
 
     #[test]
-    fn vector2_max() {}
+    fn vector2_max() {
+        assert_eq!(max(Vector2::new(-1.0, 2.0), Vector2::new(-3.0, 2.5)), Vector2::new(-1.0, 2.5));
+    }
 
     #[test]
-    fn vector2_length() {}
+    fn vector2_length() {
+        assert_eq!(Vector2::new(3.0, 4.0).length(), 5.0);
+    }
 
     #[test]
-    fn vector2_shortest() {}
+    fn vector2_shortest() {
+        let v1 = Vector2::new(-1.0, -3.0);
+        let v2 = Vector2::new(2.0, 1.5);
+        assert_eq!(shortest(v1, v2), v2);
+    }
 
     #[test]
-    fn vector2_longest() {}
+    fn vector2_longest() {
+        let v1 = Vector2::new(-1.0, -3.0);
+        let v2 = Vector2::new(2.0, 1.5);
+        assert_eq!(longest(v1, v2), v1);
+    }
 
     #[test]
-    fn vector2_dot_vector2() {}
+    fn vector2_dot_vector2() {
+        let v1 = Vector2::new(-1.0, -3.0);
+        let v2 = Vector2::new(2.0, 1.5);
+        assert_eq!(dot(v1, v2), -6.5);
+    }
 
     #[test]
-    fn vector2_index() {}
+    fn vector2_index() {
+        let v = Vector2::new(1.0, 2.0);
+        assert_eq!(v[Dimension2::X], 1.0);
+        assert_eq!(v[Dimension2::Y], 2.0);
+    }
 
     #[test]
-    fn vector2_index_mut() {}
+    fn vector2_index_mut() {
+        let mut v = Vector2::new(1.0, 2.0);
+        v[Dimension2::X] = 3.0;
+        v[Dimension2::Y] = -1.0;
+        assert_eq!(v, Vector2::new(3.0, -1.0));
+    }
 
     #[test]
-    fn vector2_add_vector2() {}
+    fn vector2_add_vector2() {
+        let v1 = Vector2::new(1.0, 2.0);
+        let v2 = Vector2::new(-0.5, 1.5);
+        assert_eq!(v1 + v2, Vector2::new(0.5, 3.5));
+    }
 
     #[test]
-    fn vector2_add_assign_vector2() {}
+    fn vector2_add_assign_vector2() {
+        let mut v1 = Vector2::new(1.0, 2.0);
+        let v2 = Vector2::new(-0.5, 1.5);
+        v1 += v2;
+        assert_eq!(v1, Vector2::new(0.5, 3.5));
+    }
 
     #[test]
-    fn vector2_sub_vector2() {}
+    fn vector2_sub_vector2() {
+        let v1 = Vector2::new(1.0, 2.0);
+        let v2 = Vector2::new(-0.5, 1.5);
+        assert_eq!(v1 - v2, Vector2::new(1.5, 0.5));
+    }
 
     #[test]
-    fn vector2_sub_assign_vector2() {}
+    fn vector2_sub_assign_vector2() {
+        let mut v1 = Vector2::new(1.0, 2.0);
+        let v2 = Vector2::new(-0.5, 1.5);
+        v1 -= v2;
+        assert_eq!(v1, Vector2::new(1.5, 0.5));
+    }
 
     #[test]
-    fn vector2_neg() {}
+    fn vector2_neg() {
+        assert_eq!(-Vector2::new(1.0, -2.0), Vector2::new(-1.0, 2.0));
+    }
 
     #[test]
-    fn vector2_mul_scalar() {}
+    fn vector2_mul_scalar() {
+        assert_eq!(Vector2::new(2.5, -1.5) * 2.0, Vector2::new(5.0, -3.0));
+    }
 
     #[test]
-    fn scalar_mul_vector2() {}
+    fn scalar_mul_vector2() {
+        assert_eq!(2.0 * Vector2::new(2.5, -1.5), Vector2::new(5.0, -3.0));
+    }
 
     #[test]
-    fn vector2_mul_assign_scalar() {}
+    fn vector2_mul_assign_scalar() {
+        let mut v = Vector2::new(2.5, -1.5);
+        v *= 2.0;
+        assert_eq!(v, Vector2::new(5.0, -3.0));
+    }
 
     #[test]
-    fn vector2_div_scalar() {}
+    fn vector2_div_scalar() {
+        assert_eq!(Vector2::new(2.5, -1.5) / 2.0, Vector2::new(1.25, -0.75));
+    }
 
     #[test]
-    fn vector2_div_assign_scalar() {}
+    fn vector2_div_assign_scalar() {
+        let mut v = Vector2::new(2.5, -1.5);
+        v /= 2.0;
+        assert_eq!(v, Vector2::new(1.25, -0.75));
+    }
 
     #[test]
-    fn vector2_from_point2() {}
+    fn vector2_from_point2() {
+        let v = Vector2::from(Point2::new(1.0, 2.0));
+        assert_eq!(v, Vector2::new(1.0, 2.0));
+    }
 
     #[test]
-    fn ray2_new() {}
+    fn ray2_new() {
+        let r = Ray2::new(Point2::new(1.0, 2.0), Vector2::new(-1.5, 0.5));
+        assert_eq!(r.origin, Point2::new(1.0, 2.0));
+        assert_eq!(r.direction, Vector2::new(-1.5, 0.5));
+    }
 
     #[test]
-    fn ray2_at() {}
+    fn ray2_at() {
+        let r = Ray2::new(Point2::new(1.0, 2.0), Vector2::new(-1.5, 0.5));
+        assert_eq!(r.at(2.5), Point2::new(-2.75, 3.25));
+    }
 
     #[test]
-    fn bounding_box2_new() {}
+    fn bounding_box2_new() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.min, Point2::new(1.0, -0.5));
+        assert_eq!(bb.max, Point2::new(5.0, 4.0));
+    }
 
     #[test]
-    fn bounding_box2_empty() {}
+    fn bounding_box2_empty() {
+        let bb = BoundingBox2::empty();
+        assert_eq!(bb.min, Point2::new(Scalar::INFINITY, Scalar::INFINITY));
+        assert_eq!(bb.max, Point2::new(Scalar::NEG_INFINITY, Scalar::NEG_INFINITY));
+    }
 
     #[test]
-    fn bounding_box2_infinite() {}
+    fn bounding_box2_infinite() {
+        let bb = BoundingBox2::infinite();
+        assert_eq!(bb.min, Point2::new(Scalar::NEG_INFINITY, Scalar::NEG_INFINITY));
+        assert_eq!(bb.max, Point2::new(Scalar::INFINITY, Scalar::INFINITY));
+    }
 
     #[test]
-    fn bounding_box2_width() {}
+    fn bounding_box2_width() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.width(), 4.0);
+    }
 
     #[test]
-    fn bounding_box2_height() {}
+    fn bounding_box2_height() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.height(), 4.5);
+    }
 
     #[test]
-    fn bounding_box2_extent() {}
+    fn bounding_box2_extent() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.extent(Dimension2::X), 4.0);
+        assert_eq!(bb.extent(Dimension2::Y), 4.5);
+    }
 
     #[test]
-    fn bounding_box2_min_dimension() {}
+    fn bounding_box2_min_dimension() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.min_dimension(), Dimension2::X);
+    }
 
     #[test]
-    fn bounding_box2_max_dimension() {}
+    fn bounding_box2_max_dimension() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.max_dimension(), Dimension2::Y);
+    }
 
     #[test]
-    fn bounding_box2_area() {}
+    fn bounding_box2_area() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.area(), 18.0);
+    }
 
     #[test]
-    fn bounding_box2_center() {}
+    fn bounding_box2_center() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.center(), Point2::new(3.0, 1.75));
+    }
 
     #[test]
-    fn bounding_box2_corner() {}
+    fn bounding_box2_corner() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.corner(0), Point2::new(1.0, -0.5));
+        assert_eq!(bb.corner(1), Point2::new(5.0, -0.5));
+        assert_eq!(bb.corner(2), Point2::new(1.0, 4.0));
+        assert_eq!(bb.corner(3), Point2::new(5.0, 4.0));
+    }
 
     #[test]
-    fn bounding_box2_diagonal() {}
+    fn bounding_box2_diagonal() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert_eq!(bb.diagonal(), Vector2::new(4.0, 4.5));
+    }
 
     #[test]
-    fn bounding_box2_overlaps() {}
+    fn bounding_box2_overlaps() {
+        let bb1 = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        let bb2 = BoundingBox2::new(Point2::new(-1.0, 2.0), Point2::new(3.0, 6.0));
+        let bb3 = BoundingBox2::new(Point2::new(3.5, 1.5), Point2::new(6.0, 5.0));
+        assert!(bb1.overlaps(&bb2));
+        assert!(!bb2.overlaps(&bb3));
+    }
 
     #[test]
-    fn bounding_box2_is_inside() {}
+    fn bounding_box2_is_inside() {
+        let bb = BoundingBox2::new(Point2::new(1.0, -0.5), Point2::new(5.0, 4.0));
+        assert!(!bb.is_inside(Point2::new(0.0, 2.0)));
+        assert!(bb.is_inside(Point2::new(2.0, 3.0)));
+        assert!(!bb.is_inside(Point2::new(4.0, 5.0)));
+    }
 
     #[test]
     fn bounding_box2_intersect_ray() {}
