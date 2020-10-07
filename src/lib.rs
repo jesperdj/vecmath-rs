@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::convert::TryFrom;
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign};
 use std::sync::Arc;
 
@@ -1158,12 +1159,6 @@ impl Transform2 {
         Transform2 { forward, inverse }
     }
 
-    /// Creates and returns a transform from a transformation matrix; computes the inverse of the matrix.
-    pub fn from_matrix(forward: Matrix3x3) -> Result<Transform2, NonInvertibleMatrixError> {
-        let inverse = forward.inverse()?;
-        Ok(Transform2::new(Arc::new(forward), Arc::new(inverse)))
-    }
-
     /// Returns a `Transform2` which represents the identity transform.
     pub fn identity() -> Transform2 {
         let forward = Arc::new(Matrix3x3::identity());
@@ -1201,6 +1196,15 @@ impl Transform2 {
     /// Returns the inverse of this transform.
     pub fn inverse(&self) -> Transform2 {
         Transform2::new(self.inverse.clone(), self.forward.clone())
+    }
+}
+
+impl TryFrom<Matrix3x3> for Transform2 {
+    type Error = NonInvertibleMatrixError;
+
+    fn try_from(forward: Matrix3x3) -> Result<Transform2, NonInvertibleMatrixError> {
+        let inverse = forward.inverse()?;
+        Ok(Transform2::new(Arc::new(forward), Arc::new(inverse)))
     }
 }
 
@@ -2504,12 +2508,6 @@ impl Transform3 {
         Transform3 { forward, inverse }
     }
 
-    /// Creates and returns a transform from a transformation matrix; computes the inverse of the matrix.
-    pub fn from_matrix(forward: Matrix4x4) -> Result<Transform3, NonInvertibleMatrixError> {
-        let inverse = forward.inverse()?;
-        Ok(Transform3::new(Arc::new(forward), Arc::new(inverse)))
-    }
-
     /// Returns a `Transform3` which represents the identity transform.
     pub fn identity() -> Transform3 {
         let forward = Arc::new(Matrix4x4::identity());
@@ -2577,6 +2575,15 @@ impl Transform3 {
     /// Returns the inverse of this transform.
     pub fn inverse(&self) -> Transform3 {
         Transform3::new(self.inverse.clone(), self.forward.clone())
+    }
+}
+
+impl TryFrom<Matrix4x4> for Transform3 {
+    type Error = NonInvertibleMatrixError;
+
+    fn try_from(forward: Matrix4x4) -> Result<Transform3, NonInvertibleMatrixError> {
+        let inverse = forward.inverse()?;
+        Ok(Transform3::new(Arc::new(forward), Arc::new(inverse)))
     }
 }
 
@@ -3106,55 +3113,149 @@ mod tests {
     }
 
     #[test]
-    fn bounding_box2_intersect_ray() {}
+    fn bounding_box2_intersect_ray() {
+        // TODO: Needs more elaborate tests, with rays going in different directions and different hit and miss cases
+    }
 
     #[test]
-    fn bounding_box2_union_bounding_box2() {}
+    fn bounding_box2_union_bounding_box2() {
+        // TODO: Test different cases with and without overlap
+    }
 
     #[test]
-    fn bounding_box2_union_point2() {}
+    fn bounding_box2_union_point2() {
+        // TODO: Test different cases with point inside and outside bounding box
+    }
 
     #[test]
-    fn bounding_box2_intersection_bounding_box2() {}
+    fn bounding_box2_intersection_bounding_box2() {
+        // TODO: Test different cases with and without overlap
+    }
 
     #[test]
-    fn matrix3x3_new() {}
+    fn matrix3x3_new() {
+        let m = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 1.0); assert_eq!(m.get(0, 1), 2.0); assert_eq!(m.get(0, 2), 3.0);
+        assert_eq!(m.get(1, 0), 4.0); assert_eq!(m.get(1, 1), 5.0); assert_eq!(m.get(1, 2), 6.0);
+        assert_eq!(m.get(2, 0), 7.0); assert_eq!(m.get(2, 1), 8.0); assert_eq!(m.get(2, 2), 9.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_identity() {}
+    fn matrix3x3_identity() {
+        let m = Matrix3x3::identity();
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 1.0); assert_eq!(m.get(0, 1), 0.0); assert_eq!(m.get(0, 2), 0.0);
+        assert_eq!(m.get(1, 0), 0.0); assert_eq!(m.get(1, 1), 1.0); assert_eq!(m.get(1, 2), 0.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 1.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_translate() {}
+    fn matrix3x3_translate() {
+        let m = Matrix3x3::translate(Vector2::new(-2.0, 3.0));
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 1.0); assert_eq!(m.get(0, 1), 0.0); assert_eq!(m.get(0, 2), -2.0);
+        assert_eq!(m.get(1, 0), 0.0); assert_eq!(m.get(1, 1), 1.0); assert_eq!(m.get(1, 2), 3.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 1.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_rotate() {}
+    fn matrix3x3_rotate() {
+        let angle = 0.52359877559829887307710723054658381;
+        let m = Matrix3x3::rotate(angle);
+        //@formatter:off
+        assert_eq!(m.get(0, 0), angle.cos()); assert_eq!(m.get(0, 1), -angle.sin()); assert_eq!(m.get(0, 2), 0.0);
+        assert_eq!(m.get(1, 0), angle.sin()); assert_eq!(m.get(1, 1), angle.cos()); assert_eq!(m.get(1, 2), 0.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 1.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_scale() {}
+    fn matrix3x3_scale() {
+        let m = Matrix3x3::scale(-2.0, 2.0);
+        //@formatter:off
+        assert_eq!(m.get(0, 0), -2.0); assert_eq!(m.get(0, 1), 0.0); assert_eq!(m.get(0, 2), 0.0);
+        assert_eq!(m.get(1, 0), 0.0); assert_eq!(m.get(1, 1), 2.0); assert_eq!(m.get(1, 2), 0.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 1.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_scale_uniform() {}
+    fn matrix3x3_scale_uniform() {
+        let m = Matrix3x3::scale_uniform(2.5);
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 2.5); assert_eq!(m.get(0, 1), 0.0); assert_eq!(m.get(0, 2), 0.0);
+        assert_eq!(m.get(1, 0), 0.0); assert_eq!(m.get(1, 1), 2.5); assert_eq!(m.get(1, 2), 0.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 1.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_get() {}
+    fn matrix3x3_get_mut() {
+        let mut m = Matrix3x3::identity();
+        *m.get_mut(0, 0) = 2.0;
+        *m.get_mut(0, 1) = 3.0;
+        *m.get_mut(1, 0) = -2.0;
+        *m.get_mut(2, 2) = 4.0;
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 2.0); assert_eq!(m.get(0, 1), 3.0); assert_eq!(m.get(0, 2), 0.0);
+        assert_eq!(m.get(1, 0), -2.0); assert_eq!(m.get(1, 1), 1.0); assert_eq!(m.get(1, 2), 0.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 4.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_get_mut() {}
+    fn matrix3x3_set() {
+        let mut m = Matrix3x3::identity();
+        m.set(0, 0, 2.0);
+        m.set(0, 1, 3.0);
+        m.set(1, 0, -2.0);
+        m.set(2, 2, 4.0);
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 2.0); assert_eq!(m.get(0, 1), 3.0); assert_eq!(m.get(0, 2), 0.0);
+        assert_eq!(m.get(1, 0), -2.0); assert_eq!(m.get(1, 1), 1.0); assert_eq!(m.get(1, 2), 0.0);
+        assert_eq!(m.get(2, 0), 0.0); assert_eq!(m.get(2, 1), 0.0); assert_eq!(m.get(2, 2), 4.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_set() {}
+    fn matrix3x3_transpose() {
+        let m = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]).transpose();
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 1.0); assert_eq!(m.get(0, 1), 4.0); assert_eq!(m.get(0, 2), 7.0);
+        assert_eq!(m.get(1, 0), 2.0); assert_eq!(m.get(1, 1), 5.0); assert_eq!(m.get(1, 2), 8.0);
+        assert_eq!(m.get(2, 0), 3.0); assert_eq!(m.get(2, 1), 6.0); assert_eq!(m.get(2, 2), 9.0);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_transpose() {}
+    fn matrix3x3_inverse() {
+        // TODO: Implement test
+    }
 
     #[test]
-    fn matrix3x3_inverse() {}
+    fn matrix3x3_mul_scalar() {
+        // TODO: Should we also implement ops for Matrix3x3 instead of just for &Matrix3x3?
+        let m = &Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]) * 2.5;
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 2.5); assert_eq!(m.get(0, 1), 5.0); assert_eq!(m.get(0, 2), 7.5);
+        assert_eq!(m.get(1, 0), 10.0); assert_eq!(m.get(1, 1), 12.5); assert_eq!(m.get(1, 2), 15.0);
+        assert_eq!(m.get(2, 0), 17.5); assert_eq!(m.get(2, 1), 20.0); assert_eq!(m.get(2, 2), 22.5);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_mul_scalar() {}
-
-    #[test]
-    fn scalar_mul_matrix3x3() {}
+    fn scalar_mul_matrix3x3() {
+        let m = 2.5 * &Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 2.5); assert_eq!(m.get(0, 1), 5.0); assert_eq!(m.get(0, 2), 7.5);
+        assert_eq!(m.get(1, 0), 10.0); assert_eq!(m.get(1, 1), 12.5); assert_eq!(m.get(1, 2), 15.0);
+        assert_eq!(m.get(2, 0), 17.5); assert_eq!(m.get(2, 1), 20.0); assert_eq!(m.get(2, 2), 22.5);
+        //@formatter:on
+    }
 
     #[test]
     fn matrix3x3_mul_assign_scalar() {}
