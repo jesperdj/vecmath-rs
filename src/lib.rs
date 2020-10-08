@@ -3238,7 +3238,6 @@ mod tests {
 
     #[test]
     fn matrix3x3_mul_scalar() {
-        // TODO: Should we also implement ops for Matrix3x3 instead of just for &Matrix3x3?
         let m = &Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]) * 2.5;
         //@formatter:off
         assert_eq!(m.get(0, 0), 2.5); assert_eq!(m.get(0, 1), 5.0); assert_eq!(m.get(0, 2), 7.5);
@@ -3258,34 +3257,75 @@ mod tests {
     }
 
     #[test]
-    fn matrix3x3_mul_assign_scalar() {}
+    fn matrix3x3_mul_assign_scalar() {
+        let mut m = &mut Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        m *= 2.5;
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 2.5); assert_eq!(m.get(0, 1), 5.0); assert_eq!(m.get(0, 2), 7.5);
+        assert_eq!(m.get(1, 0), 10.0); assert_eq!(m.get(1, 1), 12.5); assert_eq!(m.get(1, 2), 15.0);
+        assert_eq!(m.get(2, 0), 17.5); assert_eq!(m.get(2, 1), 20.0); assert_eq!(m.get(2, 2), 22.5);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_div_scalar() {}
+    fn matrix3x3_div_scalar() {
+        let m = &Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]) / 2.5;
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 0.4); assert_eq!(m.get(0, 1), 0.8); assert_eq!(m.get(0, 2), 1.2);
+        assert_eq!(m.get(1, 0), 1.6); assert_eq!(m.get(1, 1), 2.0); assert_eq!(m.get(1, 2), 2.4);
+        assert_eq!(m.get(2, 0), 2.8); assert_eq!(m.get(2, 1), 3.2); assert_eq!(m.get(2, 2), 3.6);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_div_assign_scalar() {}
+    fn matrix3x3_div_assign_scalar() {
+        let mut m = &mut Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        m /= 2.5;
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 0.4); assert_eq!(m.get(0, 1), 0.8); assert_eq!(m.get(0, 2), 1.2);
+        assert_eq!(m.get(1, 0), 1.6); assert_eq!(m.get(1, 1), 2.0); assert_eq!(m.get(1, 2), 2.4);
+        assert_eq!(m.get(2, 0), 2.8); assert_eq!(m.get(2, 1), 3.2); assert_eq!(m.get(2, 2), 3.6);
+        //@formatter:on
+    }
 
     #[test]
-    fn matrix3x3_mul_point2() {}
+    fn matrix3x3_mul_point2() {
+        let m = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        assert_eq!(&m * Point2::new(-1.0, -2.0), Point2::new(2.0 / 14.0, 8.0 / 14.0));
+    }
 
     #[test]
-    fn point2_mul_matrix3x3() {}
+    fn point2_mul_matrix3x3() {
+        let m = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        assert_eq!(Point2::new(-1.0, -2.0) * &m, Point2::new(2.0 / 6.0, 4.0 / 6.0));
+    }
 
     #[test]
-    fn matrix3x3_mul_vector2() {}
+    fn matrix3x3_mul_vector2() {
+        let m = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        assert_eq!(&m * Vector2::new(-1.0, -2.0), Vector2::new(-5.0, -14.0));
+    }
 
     #[test]
-    fn vector2_mul_matrix3x3() {}
+    fn vector2_mul_matrix3x3() {
+        let m = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        assert_eq!(Vector2::new(-1.0, -2.0) * &m, Vector2::new(-9.0, -12.0));
+    }
 
     #[test]
-    fn matrix3x3_mul_matrix3x3() {}
+    fn matrix3x3_mul_matrix3x3() {
+        let m1 = Matrix3x3::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        let m2 = Matrix3x3::new([0.25, -0.75, 0.5, -0.5, 0.25, -0.75, 1.25, -1.75, 1.5]);
+        let m = &m1 * &m2;
+        //@formatter:off
+        assert_eq!(m.get(0, 0), 3.0); assert_eq!(m.get(0, 1), -5.5); assert_eq!(m.get(0, 2), 3.5);
+        assert_eq!(m.get(1, 0), 6.0); assert_eq!(m.get(1, 1), -12.25); assert_eq!(m.get(1, 2), 7.25);
+        assert_eq!(m.get(2, 0), 9.0); assert_eq!(m.get(2, 1), -19.0); assert_eq!(m.get(2, 2), 11.0);
+        //@formatter:on
+    }
 
     #[test]
     fn transform2_new() {}
-
-    #[test]
-    fn transform2_from_matrix() {}
 
     #[test]
     fn transform2_identity() {}
@@ -3307,4 +3347,7 @@ mod tests {
 
     #[test]
     fn transform2_inverse() {}
+
+    #[test]
+    fn transform2_from_matrix() {}
 }
