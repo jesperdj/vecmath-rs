@@ -277,11 +277,13 @@ pub struct Transform3 {
 
 impl MinMax for Scalar {
     /// Compares and returns the minimum of two scalars.
+    #[inline]
     fn min(self, s: Scalar) -> Scalar {
         Scalar::min(self, s)
     }
 
     /// Compares and returns the maximum of two scalars.
+    #[inline]
     fn max(self, s: Scalar) -> Scalar {
         Scalar::max(self, s)
     }
