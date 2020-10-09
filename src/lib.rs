@@ -3617,29 +3617,98 @@ mod tests {
     }
 
     #[test]
-    fn transform2_new() {}
+    fn transform2_identity() {
+        let t = Transform2::identity();
+        assert_eq!(*t.forward, Matrix3x3::identity());
+        assert_eq!(*t.inverse, Matrix3x3::identity());
+    }
 
     #[test]
-    fn transform2_identity() {}
+    fn transform2_translate() {
+        let v = Vector2::new(-3.0, 4.0);
+        let t = Transform2::translate(v);
+        assert_eq!(*t.forward, Matrix3x3::translate(v));
+        assert_eq!(*t.inverse, Matrix3x3::translate(-v));
+    }
 
     #[test]
-    fn transform2_translate() {}
+    fn transform2_rotate() {
+        let angle = 0.52359877559829887307710723054658381;
+        let t = Transform2::rotate(angle);
+        assert_eq!(*t.forward, Matrix3x3::rotate(angle));
+        assert_eq!(*t.inverse, Matrix3x3::rotate(-angle));
+    }
 
     #[test]
-    fn transform2_rotate() {}
+    fn transform2_scale() {
+        let t = Transform2::scale(3.25, 2.5);
+        assert_eq!(*t.forward, Matrix3x3::scale(3.25, 2.5));
+        assert_eq!(*t.inverse, Matrix3x3::scale(1.0 / 3.25, 1.0 / 2.5));
+    }
 
     #[test]
-    fn transform2_scale() {}
+    fn transform2_scale_uniform() {
+        let t = Transform2::scale_uniform(4.0);
+        assert_eq!(*t.forward, Matrix3x3::scale_uniform(4.0));
+        assert_eq!(*t.inverse, Matrix3x3::scale_uniform(1.0 / 4.0));
+    }
 
     #[test]
-    fn transform2_scale_uniform() {}
+    fn transform2_and_then() {
+        let angle = 0.39269908169872415480783042290993786;
+        let v = Vector2::new(-2.0, 3.0);
+        let t = Transform2::rotate(angle).and_then(&Transform2::translate(v));
+        assert_eq!(*t.forward, &Matrix3x3::translate(v) * &Matrix3x3::rotate(angle));
+        assert_eq!(*t.inverse, &Matrix3x3::rotate(-angle) * &Matrix3x3::translate(-v));
+    }
 
     #[test]
-    fn transform2_and_then() {}
+    fn transform2_inverse() {
+        let t1 = Transform2::rotate(0.39269908169872415480783042290993786).and_then(&Transform2::translate(Vector2::new(-2.0, 3.0)));
+        let t2 = t1.inverse();
+        assert_eq!(*t1.forward, *t2.inverse);
+        assert_eq!(*t1.inverse, *t2.forward);
+    }
 
     #[test]
-    fn transform2_inverse() {}
+    fn transform2_from_matrix() {
+        let m = Matrix3x3::translate(Vector2::new(-2.0, 3.0));
+        let t = Transform2::try_from(m.clone()).unwrap();
+        assert_eq!(*t.forward, m);
+        assert_eq!(*t.inverse, m.inverse().unwrap());
+    }
 
     #[test]
-    fn transform2_from_matrix() {}
+    fn transform_point2() {
+        let angle = 0.39269908169872415480783042290993786;
+        let v = Vector2::new(-2.0, 3.0);
+        let t = Transform2::rotate(angle).and_then(&Transform2::translate(v));
+        let p = t.transform(Point2::new(-1.0, 1.0));
+        assert_eq!(p, &(&Matrix3x3::translate(v) * &Matrix3x3::rotate(angle)) * Point2::new(-1.0, 1.0));
+    }
+
+    #[test]
+    fn transform_vector2() {
+        let angle = 0.39269908169872415480783042290993786;
+        let scale = 2.25;
+        let t = Transform2::scale_uniform(scale).and_then(&Transform2::rotate(angle));
+        let v = t.transform(Vector2::new(-1.0, 1.0));
+        assert_eq!(v, &(&Matrix3x3::rotate(angle) * &Matrix3x3::scale_uniform(scale)) * Vector2::new(-1.0, 1.0));
+    }
+
+    #[test]
+    fn transform_ray2() {
+        let angle = 0.39269908169872415480783042290993786;
+        let v = Vector2::new(-2.0, 3.0);
+        let t = Transform2::rotate(angle).and_then(&Transform2::translate(v));
+        let origin = Point2::new(-2.0, 1.5);
+        let direction = Vector2::new(3.5, 2.25);
+        let r = t.transform(&Ray2::new(origin, direction));
+        assert_eq!(r, Ray2::new(t.transform(origin), t.transform(direction)));
+    }
+
+    #[test]
+    fn transform_bounding_box2() {
+        // TODO
+    }
 }
