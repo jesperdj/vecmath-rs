@@ -3711,4 +3711,424 @@ mod tests {
     fn transform_bounding_box2() {
         // TODO
     }
+
+    #[test]
+    fn point3_new() {
+        let p = Point3::new(-1.0, 2.0, 3.0);
+        assert_eq!(p.x, -1.0);
+        assert_eq!(p.y, 2.0);
+        assert_eq!(p.z, 3.0);
+    }
+
+    #[test]
+    fn point3_origin() {
+        let p = Point3::origin();
+        assert_eq!(p.x, 0.0);
+        assert_eq!(p.y, 0.0);
+        assert_eq!(p.z, 0.0);
+    }
+
+    #[test]
+    fn point3_min_dimension() {
+        assert_eq!(Point3::new(-1.0, 2.0, 3.0).min_dimension(), Dimension3::X);
+        assert_eq!(Point3::new(-3.0, 2.0, 3.0).min_dimension(), Dimension3::Y);
+        assert_eq!(Point3::new(-1.0, 2.0, 0.5).min_dimension(), Dimension3::Z);
+    }
+
+    #[test]
+    fn point3_max_dimension() {
+        assert_eq!(Point3::new(-1.0, 2.0, 0.0).max_dimension(), Dimension3::Y);
+        assert_eq!(Point3::new(-3.0, 2.0, 0.0).max_dimension(), Dimension3::X);
+        assert_eq!(Point3::new(-1.0, 2.0, -2.5).max_dimension(), Dimension3::Z);
+    }
+
+    #[test]
+    fn point3_floor() {
+        assert_eq!(Point3::new(-1.3, 2.6, 4.5).floor(), Point3::new(-2.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn point3_ceil() {
+        assert_eq!(Point3::new(-1.3, 2.6, 4.5).ceil(), Point3::new(-1.0, 3.0, 5.0));
+    }
+
+    #[test]
+    fn point3_round() {
+        assert_eq!(Point3::new(-1.6, 2.3, 4.5).round(), Point3::new(-2.0, 2.0, 5.0));
+    }
+
+    #[test]
+    fn point3_trunc() {
+        assert_eq!(Point3::new(-1.3, 2.6, 4.5).trunc(), Point3::new(-1.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn point3_fract() {
+        assert_eq!(Point3::new(-1.25, 2.5, 4.75).fract(), Point3::new(-0.25, 0.5, 0.75));
+    }
+
+    #[test]
+    fn point3_abs() {
+        assert_eq!(Point3::new(-1.3, 2.6, -4.5).abs(), Point3::new(1.3, 2.6, 4.5));
+    }
+
+    #[test]
+    fn point3_permute() {
+        assert_eq!(Point3::new(1.0, 2.0, 3.0).permute(Dimension3::X, Dimension3::X, Dimension3::X), Point3::new(1.0, 1.0, 1.0));
+        assert_eq!(Point3::new(1.0, 2.0, 3.0).permute(Dimension3::X, Dimension3::Y, Dimension3::Z), Point3::new(1.0, 2.0, 3.0));
+        assert_eq!(Point3::new(1.0, 2.0, 3.0).permute(Dimension3::Y, Dimension3::Z, Dimension3::X), Point3::new(2.0, 3.0, 1.0));
+        assert_eq!(Point3::new(1.0, 2.0, 3.0).permute(Dimension3::Z, Dimension3::X, Dimension3::Y), Point3::new(3.0, 1.0, 2.0));
+    }
+
+    #[test]
+    fn point3_min() {
+        assert_eq!(min(Point3::new(-1.0, 2.0, 3.0), Point3::new(-3.0, 2.5, 1.5)), Point3::new(-3.0, 2.0, 1.5));
+    }
+
+    #[test]
+    fn point3_max() {
+        assert_eq!(max(Point3::new(-1.0, 2.0, 3.0), Point3::new(-3.0, 2.5, 1.5)), Point3::new(-1.0, 2.5, 3.0));
+    }
+
+    #[test]
+    fn point3_distance() {
+        assert_eq!(distance(Point3::new(2.0, 7.0, 1.0), Point3::new(3.0, 4.0, -1.0)), Scalar::sqrt(14.0));
+    }
+
+    #[test]
+    fn point3_closest() {
+        let p1 = Point3::new(4.0, 1.0, 3.0);
+        let p2 = Point3::new(1.0, 5.0, -2.0);
+        assert_eq!(Point3::new(-1.0, 2.0, 0.0).closest(p1, p2), p2);
+    }
+
+    #[test]
+    fn point3_farthest() {
+        let p1 = Point3::new(4.0, 1.0, 3.0);
+        let p2 = Point3::new(1.0, 5.0, -2.0);
+        assert_eq!(Point3::new(-1.0, 2.0, 0.0).farthest(p1, p2), p1);
+    }
+
+    #[test]
+    fn point3_index() {
+        let p = Point3::new(1.0, 2.0, 3.0);
+        assert_eq!(p[Dimension3::X], 1.0);
+        assert_eq!(p[Dimension3::Y], 2.0);
+        assert_eq!(p[Dimension3::Z], 3.0);
+    }
+
+    #[test]
+    fn point3_index_mut() {
+        let mut p = Point3::new(1.0, 2.0, 3.0);
+        p[Dimension3::X] = 3.0;
+        p[Dimension3::Y] = -1.0;
+        p[Dimension3::Z] = 2.0;
+        assert_eq!(p, Point3::new(3.0, -1.0, 2.0));
+    }
+
+    #[test]
+    fn point3_add_vector3() {
+        let p = Point3::new(1.0, 2.0, 3.0);
+        let v = Vector3::new(-0.5, 1.5, 2.5);
+        assert_eq!(p + v, Point3::new(0.5, 3.5, 5.5));
+    }
+
+    #[test]
+    fn point3_add_assign_vector3() {
+        let mut p = Point3::new(1.0, 2.0, 3.0);
+        let v = Vector3::new(-0.5, 1.5, 2.5);
+        p += v;
+        assert_eq!(p, Point3::new(0.5, 3.5, 5.5));
+    }
+
+    #[test]
+    fn point3_sub_vector3() {
+        let p = Point3::new(1.0, 2.0, 3.0);
+        let v = Vector3::new(-0.5, 1.5, 2.75);
+        assert_eq!(p - v, Point3::new(1.5, 0.5, 0.25));
+    }
+
+    #[test]
+    fn point3_sub_assign_vector3() {
+        let mut p = Point3::new(1.0, 2.0, 3.0);
+        let v = Vector3::new(-0.5, 1.5, 2.75);
+        p -= v;
+        assert_eq!(p, Point3::new(1.5, 0.5, 0.25));
+    }
+
+    #[test]
+    fn point3_sub_point3() {
+        let p1 = Point3::new(4.0, 2.0, 1.0);
+        let p2 = Point3::new(1.0, 5.0, 2.0);
+        assert_eq!(p1 - p2, Vector3::new(3.0, -3.0, -1.0));
+    }
+
+    #[test]
+    fn point3_neg() {
+        assert_eq!(-Point3::new(1.0, -2.0, 3.0), Point3::new(-1.0, 2.0, -3.0));
+    }
+
+    #[test]
+    fn point3_mul_scalar() {
+        assert_eq!(Point3::new(2.5, -1.5, 3.0) * 2.0, Point3::new(5.0, -3.0, 6.0));
+    }
+
+    #[test]
+    fn scalar_mul_point3() {
+        assert_eq!(2.0 * Point3::new(2.5, -1.5, 3.0), Point3::new(5.0, -3.0, 6.0));
+    }
+
+    #[test]
+    fn point3_mul_assign_scalar() {
+        let mut p = Point3::new(2.5, -1.5, 3.0);
+        p *= 2.0;
+        assert_eq!(p, Point3::new(5.0, -3.0, 6.0));
+    }
+
+    #[test]
+    fn point3_div_scalar() {
+        assert_eq!(Point3::new(2.5, -1.5, 3.0) / 2.0, Point3::new(1.25, -0.75, 1.5));
+    }
+
+    #[test]
+    fn point3_div_assign_scalar() {
+        let mut p = Point3::new(2.5, -1.5, 3.0);
+        p /= 2.0;
+        assert_eq!(p, Point3::new(1.25, -0.75, 1.5));
+    }
+
+    #[test]
+    fn point3_from_vector3() {
+        let p = Point3::from(Vector3::new(1.0, 2.0, 3.0));
+        assert_eq!(p, Point3::new(1.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn vector3_new() {
+        let v = Vector3::new(-1.0, 2.0, -3.0);
+        assert_eq!(v.x, -1.0);
+        assert_eq!(v.y, 2.0);
+        assert_eq!(v.z, -3.0);
+    }
+
+    #[test]
+    fn vector3_zero() {
+        let v = Vector3::zero();
+        assert_eq!(v.x, 0.0);
+        assert_eq!(v.y, 0.0);
+        assert_eq!(v.z, 0.0);
+    }
+
+    #[test]
+    fn vector3_x_axis() {
+        let v = Vector3::x_axis();
+        assert_eq!(v.x, 1.0);
+        assert_eq!(v.y, 0.0);
+        assert_eq!(v.z, 0.0);
+    }
+
+    #[test]
+    fn vector3_y_axis() {
+        let v = Vector3::y_axis();
+        assert_eq!(v.x, 0.0);
+        assert_eq!(v.y, 1.0);
+        assert_eq!(v.z, 0.0);
+    }
+
+    #[test]
+    fn vector3_z_axis() {
+        let v = Vector3::z_axis();
+        assert_eq!(v.x, 0.0);
+        assert_eq!(v.y, 0.0);
+        assert_eq!(v.z, 1.0);
+    }
+
+    #[test]
+    fn vector3_axis() {
+        assert_eq!(Vector3::axis(Dimension3::X), Vector3::x_axis());
+        assert_eq!(Vector3::axis(Dimension3::Y), Vector3::y_axis());
+        assert_eq!(Vector3::axis(Dimension3::Z), Vector3::z_axis());
+    }
+
+    #[test]
+    fn vector3_normalize() {
+        let v = Vector3::new(3.0, -2.0, 1.0);
+        assert_eq!(v.normalize(), v / Scalar::sqrt(14.0));
+    }
+
+    #[test]
+    fn vector3_min_dimension() {
+        assert_eq!(Vector3::new(-1.0, 2.0, 3.0).min_dimension(), Dimension3::X);
+        assert_eq!(Vector3::new(-3.0, 2.0, 2.5).min_dimension(), Dimension3::Y);
+    }
+
+    #[test]
+    fn vector3_max_dimension() {
+        assert_eq!(Vector3::new(-1.0, 2.0, 0.5).max_dimension(), Dimension3::Y);
+        assert_eq!(Vector3::new(-3.0, 2.0, 0.5).max_dimension(), Dimension3::X);
+        assert_eq!(Vector3::new(-3.0, 2.0, 4.0).max_dimension(), Dimension3::Z);
+    }
+
+    #[test]
+    fn vector3_floor() {
+        assert_eq!(Vector3::new(-1.3, 2.6, 3.75).floor(), Vector3::new(-2.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn vector3_ceil() {
+        assert_eq!(Vector3::new(-1.3, 2.6, 3.75).ceil(), Vector3::new(-1.0, 3.0, 4.0));
+    }
+
+    #[test]
+    fn vector3_round() {
+        assert_eq!(Vector3::new(-1.6, 2.3, 3.75).round(), Vector3::new(-2.0, 2.0, 4.0));
+    }
+
+    #[test]
+    fn vector3_trunc() {
+        assert_eq!(Vector3::new(-1.3, 2.6, 3.75).trunc(), Vector3::new(-1.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn vector3_fract() {
+        assert_eq!(Vector3::new(-1.25, 2.5, 3.75).fract(), Vector3::new(-0.25, 0.5, 0.75));
+    }
+
+    #[test]
+    fn vector3_abs() {
+        assert_eq!(Vector3::new(-1.3, 2.6, -2.0).abs(), Vector3::new(1.3, 2.6, 2.0));
+    }
+
+    #[test]
+    fn vector3_permute() {
+        assert_eq!(Vector3::new(1.0, 2.0, 3.0).permute(Dimension3::X, Dimension3::X, Dimension3::X), Vector3::new(1.0, 1.0, 1.0));
+        assert_eq!(Vector3::new(1.0, 2.0, 3.0).permute(Dimension3::X, Dimension3::Y, Dimension3::Z), Vector3::new(1.0, 2.0, 3.0));
+        assert_eq!(Vector3::new(1.0, 2.0, 3.0).permute(Dimension3::Y, Dimension3::Z, Dimension3::X), Vector3::new(2.0, 3.0, 1.0));
+        assert_eq!(Vector3::new(1.0, 2.0, 3.0).permute(Dimension3::Z, Dimension3::X, Dimension3::Y), Vector3::new(3.0, 1.0, 2.0));
+    }
+
+    #[test]
+    fn vector3_min() {
+        assert_eq!(min(Vector3::new(-1.0, 2.0, 3.0), Vector3::new(-3.0, 2.5, 3.5)), Vector3::new(-3.0, 2.0, 3.0));
+    }
+
+    #[test]
+    fn vector3_max() {
+        assert_eq!(max(Vector3::new(-1.0, 2.0, 3.0), Vector3::new(-3.0, 2.5, 3.5)), Vector3::new(-1.0, 2.5, 3.5));
+    }
+
+    #[test]
+    fn vector3_length() {
+        assert_eq!(Vector3::new(2.0, 3.0, 6.0).length(), 7.0);
+    }
+
+    #[test]
+    fn vector3_shortest() {
+        let v1 = Vector3::new(-1.0, -3.0, 0.5);
+        let v2 = Vector3::new(2.0, 1.5, 0.5);
+        assert_eq!(shortest(v1, v2), v2);
+    }
+
+    #[test]
+    fn vector3_longest() {
+        let v1 = Vector3::new(-1.0, -3.0, 0.5);
+        let v2 = Vector3::new(2.0, 1.5, 0.5);
+        assert_eq!(longest(v1, v2), v1);
+    }
+
+    #[test]
+    fn vector3_dot_vector3() {
+        let v1 = Vector3::new(-1.0, -3.0, 2.5);
+        let v2 = Vector3::new(2.0, 1.5, 0.5);
+        assert_eq!(dot(v1, v2), -5.25);
+    }
+
+    #[test]
+    fn vector3_index() {
+        let v = Vector3::new(1.0, 2.0, 3.0);
+        assert_eq!(v[Dimension3::X], 1.0);
+        assert_eq!(v[Dimension3::Y], 2.0);
+        assert_eq!(v[Dimension3::Z], 3.0);
+    }
+
+    #[test]
+    fn vector3_index_mut() {
+        let mut v = Vector3::new(1.0, 2.0, 3.0);
+        v[Dimension3::X] = 3.0;
+        v[Dimension3::Y] = -1.0;
+        v[Dimension3::Z] = 2.5;
+        assert_eq!(v, Vector3::new(3.0, -1.0, 2.5));
+    }
+
+    #[test]
+    fn vector3_add_vector3() {
+        let v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(-0.5, 1.5, 3.0);
+        assert_eq!(v1 + v2, Vector3::new(0.5, 3.5, 6.0));
+    }
+
+    #[test]
+    fn vector3_add_assign_vector3() {
+        let mut v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(-0.5, 1.5, 3.0);
+        v1 += v2;
+        assert_eq!(v1, Vector3::new(0.5, 3.5, 6.0));
+    }
+
+    #[test]
+    fn vector3_sub_vector3() {
+        let v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(-0.5, 1.5, 3.5);
+        assert_eq!(v1 - v2, Vector3::new(1.5, 0.5, -0.5));
+    }
+
+    #[test]
+    fn vector3_sub_assign_vector3() {
+        let mut v1 = Vector3::new(1.0, 2.0, 3.0);
+        let v2 = Vector3::new(-0.5, 1.5, 3.5);
+        v1 -= v2;
+        assert_eq!(v1, Vector3::new(1.5, 0.5, -0.5));
+    }
+
+    #[test]
+    fn vector3_neg() {
+        assert_eq!(-Vector3::new(1.0, -2.0, 3.0), Vector3::new(-1.0, 2.0, -3.0));
+    }
+
+    #[test]
+    fn vector3_mul_scalar() {
+        assert_eq!(Vector3::new(2.5, -1.5, 4.0) * 2.0, Vector3::new(5.0, -3.0, 8.0));
+    }
+
+    #[test]
+    fn scalar_mul_vector3() {
+        assert_eq!(2.0 * Vector3::new(2.5, -1.5, 4.0), Vector3::new(5.0, -3.0, 8.0));
+    }
+
+    #[test]
+    fn vector3_mul_assign_scalar() {
+        let mut v = Vector3::new(2.5, -1.5, 4.0);
+        v *= 2.0;
+        assert_eq!(v, Vector3::new(5.0, -3.0, 8.0));
+    }
+
+    #[test]
+    fn vector3_div_scalar() {
+        assert_eq!(Vector3::new(2.5, -1.5, 4.0) / 2.0, Vector3::new(1.25, -0.75, 2.0));
+    }
+
+    #[test]
+    fn vector3_div_assign_scalar() {
+        let mut v = Vector3::new(2.5, -1.5, 4.0);
+        v /= 2.0;
+        assert_eq!(v, Vector3::new(1.25, -0.75, 2.0));
+    }
+
+    #[test]
+    fn vector3_from_point3() {
+        let v = Vector3::from(Point3::new(1.0, 2.0, 3.0));
+        assert_eq!(v, Vector3::new(1.0, 2.0, 3.0));
+    }
+
+    // TODO: Tests for BoundingBox3, Matrix4x4, Transform3
 }
