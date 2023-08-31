@@ -9,10 +9,10 @@ license-file = "LICENSE"
 repository = "https://github.com/jesperdj/vecmath-rs"
 
 [dependencies]
-array-macro = "1.0.5"
+array-macro = "2.1.5"
 
 [dev-dependencies]
-criterion = "0.3.3"
+criterion = "0.5.1"
 
 [[bench]]
 name = "vecmath_bench"

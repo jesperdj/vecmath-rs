@@ -1167,7 +1167,7 @@ impl Mul<Scalar> for &Matrix3x3 {
 
     #[inline]
     fn mul(self, s: Scalar) -> Matrix3x3 {
-        Matrix3x3::new(array![|i| self.m[i] * s; 9])
+        Matrix3x3::new(array![i => self.m[i] * s; 9])
     }
 }
 
@@ -1192,7 +1192,7 @@ impl Div<Scalar> for &Matrix3x3 {
 
     #[inline]
     fn div(self, s: Scalar) -> Matrix3x3 {
-        Matrix3x3::new(array![|i| self.m[i] / s; 9])
+        Matrix3x3::new(array![i => self.m[i] / s; 9])
     }
 }
 
@@ -2667,7 +2667,7 @@ impl Mul<Scalar> for &Matrix4x4 {
 
     #[inline]
     fn mul(self, s: Scalar) -> Matrix4x4 {
-        Matrix4x4::new(array![|i| self.m[i] * s; 16])
+        Matrix4x4::new(array![i => self.m[i] * s; 16])
     }
 }
 
@@ -2692,7 +2692,7 @@ impl Div<Scalar> for &Matrix4x4 {
 
     #[inline]
     fn div(self, s: Scalar) -> Matrix4x4 {
-        Matrix4x4::new(array![|i| self.m[i] / s; 16])
+        Matrix4x4::new(array![i => self.m[i] / s; 16])
     }
 }
 
