@@ -12,7 +12,7 @@ repository = "https://github.com/jesperdj/vecmath-rs"
 array-macro = "2.1.5"
 
 [dev-dependencies]
-criterion = "0.5.1"
+criterion = { version = "0.5.1", features = ["html_reports"] }
 
 [[bench]]
 name = "vecmath_bench"
