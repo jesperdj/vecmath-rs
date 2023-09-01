@@ -9,7 +9,6 @@ license-file = "LICENSE"
 repository = "https://github.com/jesperdj/vecmath-rs"
 
 [dependencies]
-array-macro = "2.1.5"
 num-traits = "0.2.16"
 
 [dev-dependencies]

@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::array;
 use std::convert::TryFrom;
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign};
 use std::sync::Arc;
-
-use array_macro::array;
 
 use num_traits::{Float, NumAssign};
 
@@ -1267,7 +1266,7 @@ impl<S: Scalar> Mul<S> for &Matrix3x3<S> {
 
     #[inline]
     fn mul(self, s: S) -> Matrix3x3<S> {
-        Matrix3x3::new(array![i => self.m[i] * s; 9])
+        Matrix3x3::new(array::from_fn(|i| self.m[i] * s))
     }
 }
 
@@ -1299,7 +1298,7 @@ impl<S: Scalar> Div<S> for &Matrix3x3<S> {
 
     #[inline]
     fn div(self, s: S) -> Matrix3x3<S> {
-        Matrix3x3::new(array![i => self.m[i] / s; 9])
+        Matrix3x3::new(array::from_fn(|i| self.m[i] / s))
     }
 }
 
@@ -2814,7 +2813,7 @@ impl<S: Scalar> Mul<S> for &Matrix4x4<S> {
 
     #[inline]
     fn mul(self, s: S) -> Matrix4x4<S> {
-        Matrix4x4::new(array![i => self.m[i] * s; 16])
+        Matrix4x4::new(array::from_fn(|i| self.m[i] * s))
     }
 }
 
@@ -2846,7 +2845,7 @@ impl<S: Scalar> Div<S> for &Matrix4x4<S> {
 
     #[inline]
     fn div(self, s: S) -> Matrix4x4<S> {
-        Matrix4x4::new(array![i => self.m[i] / s; 16])
+        Matrix4x4::new(array::from_fn(|i| self.m[i] / s))
     }
 }
 
@@ -3046,7 +3045,7 @@ mod tests {
 
     #[test]
     fn scalar_max() {
-        assert_eq!(max(-1.0, 2.0), 2.0);
+        assert_eq!(max(-2.0, 1.0), 1.0);
     }
 
     #[test]
@@ -3103,6 +3102,7 @@ mod tests {
     #[test]
     fn point2_abs() {
         assert_eq!(Point2d::new(-1.3, 2.6).abs(), Point2d::new(1.3, 2.6));
+        assert_eq!(Point2d::new(1.3, -2.6).abs(), Point2d::new(1.3, 2.6));
     }
 
     #[test]
@@ -3920,6 +3920,7 @@ mod tests {
     #[test]
     fn point3_abs() {
         assert_eq!(Point3d::new(-1.3, 2.6, -4.5).abs(), Point3d::new(1.3, 2.6, 4.5));
+        assert_eq!(Point3d::new(1.3, -2.6, 4.5).abs(), Point3d::new(1.3, 2.6, 4.5));
     }
 
     #[test]
