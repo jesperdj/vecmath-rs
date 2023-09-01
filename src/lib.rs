@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use array_macro::array;
 
-use num_traits::Float;
+use num_traits::{Float, NumAssign};
 
 /// Trait for types that have `min()` and `max()` methods.
 pub trait MinMax {
@@ -173,12 +173,16 @@ pub trait Transform<T> {
 pub struct NonInvertibleMatrixError;
 
 /// Extra constants that are not defined in `num_traits::float::FloatConst`.
-pub trait FloatConstExt {
+pub trait ScalarConst {
     /// Return `0.5`.
     fn half() -> Self;
 
     /// Return `2.0`.
     fn two() -> Self;
+}
+
+/// Scalar value.
+pub trait Scalar : Float + NumAssign + ScalarConst {
 }
 
 /// Dimension in 2D space.
@@ -187,43 +191,43 @@ pub enum Dimension2 { X, Y }
 
 /// Point in 2D space.
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Point2<Scalar: Float> {
-    pub x: Scalar,
-    pub y: Scalar,
+pub struct Point2<S: Scalar> {
+    pub x: S,
+    pub y: S,
 }
 
 /// Vector in 2D space.
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Vector2<Scalar: Float> {
-    pub x: Scalar,
-    pub y: Scalar,
+pub struct Vector2<S: Scalar> {
+    pub x: S,
+    pub y: S,
 }
 
 /// Ray in 2D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Ray2<Scalar: Float> {
-    pub origin: Point2<Scalar>,
-    pub direction: Vector2<Scalar>,
+pub struct Ray2<S: Scalar> {
+    pub origin: Point2<S>,
+    pub direction: Vector2<S>,
 }
 
 /// Axis-aligned bounding box in 2D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct BoundingBox2<Scalar: Float> {
-    pub min: Point2<Scalar>,
-    pub max: Point2<Scalar>,
+pub struct BoundingBox2<S: Scalar> {
+    pub min: Point2<S>,
+    pub max: Point2<S>,
 }
 
 /// Matrix with 3 rows and 3 columns for transformations in 2D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Matrix3x3<Scalar: Float> {
-    m: [Scalar; 9]
+pub struct Matrix3x3<S: Scalar> {
+    m: [S; 9]
 }
 
 /// Transform for transformations in 2D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Transform2<Scalar: Float> {
-    pub forward: Arc<Matrix3x3<Scalar>>,
-    pub inverse: Arc<Matrix3x3<Scalar>>,
+pub struct Transform2<S: Scalar> {
+    pub forward: Arc<Matrix3x3<S>>,
+    pub inverse: Arc<Matrix3x3<S>>,
 }
 
 /// Dimension in 3D space.
@@ -232,53 +236,53 @@ pub enum Dimension3 { X, Y, Z }
 
 /// Point in 3D space.
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Point3<Scalar: Float> {
-    pub x: Scalar,
-    pub y: Scalar,
-    pub z: Scalar,
+pub struct Point3<S: Scalar> {
+    pub x: S,
+    pub y: S,
+    pub z: S,
 }
 
 /// Vector in 3D space.
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Vector3<Scalar: Float> {
-    pub x: Scalar,
-    pub y: Scalar,
-    pub z: Scalar,
+pub struct Vector3<S: Scalar> {
+    pub x: S,
+    pub y: S,
+    pub z: S,
 }
 
 /// Surface normal in 3D space.
 #[derive(Copy, Clone, PartialEq, Debug)]
-pub struct Normal3<Scalar: Float> {
-    pub x: Scalar,
-    pub y: Scalar,
-    pub z: Scalar,
+pub struct Normal3<S: Scalar> {
+    pub x: S,
+    pub y: S,
+    pub z: S,
 }
 
 /// Ray in 3D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Ray3<Scalar: Float> {
-    pub origin: Point3<Scalar>,
-    pub direction: Vector3<Scalar>,
+pub struct Ray3<S: Scalar> {
+    pub origin: Point3<S>,
+    pub direction: Vector3<S>,
 }
 
 /// Axis-aligned bounding box in 3D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct BoundingBox3<Scalar: Float> {
-    pub min: Point3<Scalar>,
-    pub max: Point3<Scalar>,
+pub struct BoundingBox3<S: Scalar> {
+    pub min: Point3<S>,
+    pub max: Point3<S>,
 }
 
 /// Matrix with 4 rows and 4 columns for transformations in 3D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Matrix4x4<Scalar: Float> {
-    m: [Scalar; 16]
+pub struct Matrix4x4<S: Scalar> {
+    m: [S; 16]
 }
 
 /// Transform for transformations in 3D space.
 #[derive(Clone, PartialEq, Debug)]
-pub struct Transform3<Scalar: Float> {
-    pub forward: Arc<Matrix4x4<Scalar>>,
-    pub inverse: Arc<Matrix4x4<Scalar>>,
+pub struct Transform3<S: Scalar> {
+    pub forward: Arc<Matrix4x4<S>>,
+    pub inverse: Arc<Matrix4x4<S>>,
 }
 
 pub type Point2f = Point2<f32>;
@@ -311,23 +315,26 @@ pub type Transform3d = Transform3<f64>;
 
 // ===== Scalar ================================================================================================================================================
 
-impl<Scalar: Float> MinMax for Scalar {
+impl<S: Scalar> MinMax for S {
     /// Compares and returns the minimum of two scalars.
     #[inline]
-    fn min(self, s: Scalar) -> Scalar {
-        Scalar::min(self, s)
+    fn min(self, s: S) -> S {
+        S::min(self, s)
     }
 
     /// Compares and returns the maximum of two scalars.
     #[inline]
-    fn max(self, s: Scalar) -> Scalar {
-        Scalar::max(self, s)
+    fn max(self, s: S) -> S {
+        S::max(self, s)
     }
 }
 
-// ===== FloatConstExt =========================================================================================================================================
+impl Scalar for f32 {}
+impl Scalar for f64 {}
 
-impl FloatConstExt for f32 {
+// ===== ScalarConst ===========================================================================================================================================
+
+impl ScalarConst for f32 {
     #[inline]
     fn half() -> f32 {
         0.5f32
@@ -339,7 +346,7 @@ impl FloatConstExt for f32 {
     }
 }
 
-impl FloatConstExt for f64 {
+impl ScalarConst for f64 {
     #[inline]
     fn half() -> f64 {
         0.5f64
@@ -353,17 +360,17 @@ impl FloatConstExt for f64 {
 
 // ===== Point2 ================================================================================================================================================
 
-impl<Scalar: Float> Point2<Scalar> {
+impl<S: Scalar> Point2<S> {
     /// Creates and returns a new `Point2` with x and y coordinates.
     #[inline]
-    pub fn new(x: Scalar, y: Scalar) -> Point2<Scalar> {
+    pub fn new(x: S, y: S) -> Point2<S> {
         Point2 { x, y }
     }
 
     /// Returns a `Point2` which represents the origin (x = 0 and y = 0).
     #[inline]
-    pub fn origin() -> Point2<Scalar> {
-        Point2::new(Scalar::zero(), Scalar::zero())
+    pub fn origin() -> Point2<S> {
+        Point2::new(S::zero(), S::zero())
     }
 
     /// Returns the dimension with the smallest extent of this point.
@@ -382,78 +389,78 @@ impl<Scalar: Float> Point2<Scalar> {
 
     /// Returns the element-wise floor of this point.
     #[inline]
-    pub fn floor(self) -> Point2<Scalar> {
+    pub fn floor(self) -> Point2<S> {
         Point2::new(self.x.floor(), self.y.floor())
     }
 
     /// Returns the element-wise ceiling of this point.
     #[inline]
-    pub fn ceil(self) -> Point2<Scalar> {
+    pub fn ceil(self) -> Point2<S> {
         Point2::new(self.x.ceil(), self.y.ceil())
     }
 
     /// Returns the element-wise rounded value of this point.
     #[inline]
-    pub fn round(self) -> Point2<Scalar> {
+    pub fn round(self) -> Point2<S> {
         Point2::new(self.x.round(), self.y.round())
     }
 
     /// Returns the element-wise truncated value of this point.
     #[inline]
-    pub fn trunc(self) -> Point2<Scalar> {
+    pub fn trunc(self) -> Point2<S> {
         Point2::new(self.x.trunc(), self.y.trunc())
     }
 
     /// Returns the element-wise fractional value of this point.
     #[inline]
-    pub fn fract(self) -> Point2<Scalar> {
+    pub fn fract(self) -> Point2<S> {
         Point2::new(self.x.fract(), self.y.fract())
     }
 
     /// Returns the element-wise absolute value of this point.
     #[inline]
-    pub fn abs(self) -> Point2<Scalar> {
+    pub fn abs(self) -> Point2<S> {
         Point2::new(self.x.abs(), self.y.abs())
     }
 
     /// Returns a point with a permutation of the elements of this point.
     #[inline]
-    pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Point2<Scalar> {
+    pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Point2<S> {
         Point2::new(self[dim_x], self[dim_y])
     }
 }
 
-impl<Scalar: Float> MinMax for Point2<Scalar> {
+impl<S: Scalar> MinMax for Point2<S> {
     /// Returns the element-wise minimum of two points.
     #[inline]
-    fn min(self, p: Point2<Scalar>) -> Point2<Scalar> {
+    fn min(self, p: Point2<S>) -> Point2<S> {
         Point2::new(min(self.x, p.x), min(self.y, p.y))
     }
 
     /// Returns the element-wise maximum of two points.
     #[inline]
-    fn max(self, p: Point2<Scalar>) -> Point2<Scalar> {
+    fn max(self, p: Point2<S>) -> Point2<S> {
         Point2::new(max(self.x, p.x), max(self.y, p.y))
     }
 }
 
-impl<Scalar: Float> Distance for Point2<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Distance for Point2<S> {
+    type Output = S;
 
     /// Computes and returns the distance between two points.
     #[inline]
-    fn distance(self, p: Point2<Scalar>) -> Scalar {
+    fn distance(self, p: Point2<S>) -> S {
         (p - self).length()
     }
 }
 
-impl<Scalar: Float> RelativeDistance for Point2<Scalar> {
+impl<S: Scalar> RelativeDistance for Point2<S> {
     /// Checks which of the points `p1` and `p2` is closest to this point and returns the closest one.
     ///
     /// This is more computationally efficient than computing the distance between this point and the points `p1` and `p2` and comparing the distances,
     /// because square root operations that are needed for computing the distances are avoided.
     #[inline]
-    fn closest(self, p1: Point2<Scalar>, p2: Point2<Scalar>) -> Point2<Scalar> {
+    fn closest(self, p1: Point2<S>, p2: Point2<S>) -> Point2<S> {
         let (dp1, dp2) = (p1 - self, p2 - self);
         if dot(dp1, dp1) <= dot(dp2, dp2) { p1 } else { p2 }
     }
@@ -463,17 +470,17 @@ impl<Scalar: Float> RelativeDistance for Point2<Scalar> {
     /// This is more computationally efficient than computing the distance between this point and the points `p1` and `p2` and comparing the distances,
     /// because square root operations that are needed for computing the distances are avoided.
     #[inline]
-    fn farthest(self, p1: Point2<Scalar>, p2: Point2<Scalar>) -> Point2<Scalar> {
+    fn farthest(self, p1: Point2<S>, p2: Point2<S>) -> Point2<S> {
         let (dp1, dp2) = (p1 - self, p2 - self);
         if dot(dp1, dp1) > dot(dp2, dp2) { p1 } else { p2 }
     }
 }
 
-impl<Scalar: Float> Index<Dimension2> for Point2<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Index<Dimension2> for Point2<S> {
+    type Output = S;
 
     #[inline]
-    fn index(&self, dim: Dimension2) -> &Scalar {
+    fn index(&self, dim: Dimension2) -> &S {
         match dim {
             Dimension2::X => &self.x,
             Dimension2::Y => &self.y,
@@ -481,9 +488,9 @@ impl<Scalar: Float> Index<Dimension2> for Point2<Scalar> {
     }
 }
 
-impl<Scalar: Float> IndexMut<Dimension2> for Point2<Scalar> {
+impl<S: Scalar> IndexMut<Dimension2> for Point2<S> {
     #[inline]
-    fn index_mut(&mut self, dim: Dimension2) -> &mut Scalar {
+    fn index_mut(&mut self, dim: Dimension2) -> &mut S {
         match dim {
             Dimension2::X => &mut self.x,
             Dimension2::Y => &mut self.y,
@@ -491,63 +498,63 @@ impl<Scalar: Float> IndexMut<Dimension2> for Point2<Scalar> {
     }
 }
 
-impl<Scalar: Float> Add<Vector2<Scalar>> for Point2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Add<Vector2<S>> for Point2<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn add(self, v: Vector2<Scalar>) -> Point2<Scalar> {
+    fn add(self, v: Vector2<S>) -> Point2<S> {
         Point2::new(self.x + v.x, self.y + v.y)
     }
 }
 
-impl<Scalar: Float + AddAssign> AddAssign<Vector2<Scalar>> for Point2<Scalar> {
+impl<S: Scalar> AddAssign<Vector2<S>> for Point2<S> {
     #[inline]
-    fn add_assign(&mut self, v: Vector2<Scalar>) {
+    fn add_assign(&mut self, v: Vector2<S>) {
         self.x += v.x;
         self.y += v.y;
     }
 }
 
-impl<Scalar: Float> Sub<Vector2<Scalar>> for Point2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Sub<Vector2<S>> for Point2<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn sub(self, v: Vector2<Scalar>) -> Point2<Scalar> {
+    fn sub(self, v: Vector2<S>) -> Point2<S> {
         Point2::new(self.x - v.x, self.y - v.y)
     }
 }
 
-impl<Scalar: Float + SubAssign> SubAssign<Vector2<Scalar>> for Point2<Scalar> {
+impl<S: Scalar> SubAssign<Vector2<S>> for Point2<S> {
     #[inline]
-    fn sub_assign(&mut self, v: Vector2<Scalar>) {
+    fn sub_assign(&mut self, v: Vector2<S>) {
         self.x -= v.x;
         self.y -= v.y;
     }
 }
 
-impl<Scalar: Float> Sub<Point2<Scalar>> for Point2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Sub<Point2<S>> for Point2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn sub(self, p: Point2<Scalar>) -> Vector2<Scalar> {
+    fn sub(self, p: Point2<S>) -> Vector2<S> {
         Vector2::new(self.x - p.x, self.y - p.y)
     }
 }
 
-impl<Scalar: Float> Neg for Point2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Neg for Point2<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn neg(self) -> Point2<Scalar> {
+    fn neg(self) -> Point2<S> {
         Point2::new(-self.x, -self.y)
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for Point2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Mul<S> for Point2<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Point2<Scalar> {
+    fn mul(self, s: S) -> Point2<S> {
         Point2::new(self.x * s, self.y * s)
     }
 }
@@ -570,78 +577,78 @@ impl Mul<Point2d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for Point2<Scalar> {
+impl<S: Scalar> MulAssign<S> for Point2<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         self.x *= s;
         self.y *= s;
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for Point2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Div<S> for Point2<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Point2<Scalar> {
+    fn div(self, s: S) -> Point2<S> {
         Point2::new(self.x / s, self.y / s)
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for Point2<Scalar> {
+impl<S: Scalar> DivAssign<S> for Point2<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         self.x /= s;
         self.y /= s;
     }
 }
 
-impl<Scalar: Float> Transform<Point2<Scalar>> for Transform2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Transform<Point2<S>> for Transform2<S> {
+    type Output = Point2<S>;
 
     /// Transforms a point.
     #[inline]
-    fn transform(&self, p: Point2<Scalar>) -> Point2<Scalar> {
+    fn transform(&self, p: Point2<S>) -> Point2<S> {
         &*self.forward * p
     }
 }
 
-impl<Scalar: Float> From<Vector2<Scalar>> for Point2<Scalar> {
+impl<S: Scalar> From<Vector2<S>> for Point2<S> {
     #[inline]
-    fn from(v: Vector2<Scalar>) -> Point2<Scalar> {
+    fn from(v: Vector2<S>) -> Point2<S> {
         Point2::new(v.x, v.y)
     }
 }
 
 // ===== Vector2 ===============================================================================================================================================
 
-impl<Scalar: Float> Vector2<Scalar> {
+impl<S: Scalar> Vector2<S> {
     /// Creates and returns a new `Vector2` with x and y coordinates.
     #[inline]
-    pub fn new(x: Scalar, y: Scalar) -> Vector2<Scalar> {
+    pub fn new(x: S, y: S) -> Vector2<S> {
         Vector2 { x, y }
     }
 
     /// Returns a `Vector2` which represents the zero vector (x = 0 and y = 0).
     #[inline]
-    pub fn zero() -> Vector2<Scalar> {
-        Vector2::new(Scalar::zero(), Scalar::zero())
+    pub fn zero() -> Vector2<S> {
+        Vector2::new(S::zero(), S::zero())
     }
 
     /// Returns a `Vector2` of length 1 which represents the X axis (x = 1 and y = 0).
     #[inline]
-    pub fn x_axis() -> Vector2<Scalar> {
-        Vector2::new(Scalar::one(), Scalar::zero())
+    pub fn x_axis() -> Vector2<S> {
+        Vector2::new(S::one(), S::zero())
     }
 
     /// Returns a `Vector2` of length 1 which represents the Y axis (x = 0 and y = 1).
     #[inline]
-    pub fn y_axis() -> Vector2<Scalar> {
-        Vector2::new(Scalar::zero(), Scalar::one())
+    pub fn y_axis() -> Vector2<S> {
+        Vector2::new(S::zero(), S::one())
     }
 
     /// Returns a `Vector2` of length 1 which represents the axis specified by a dimension.
     #[inline]
-    pub fn axis(dim: Dimension2) -> Vector2<Scalar> {
+    pub fn axis(dim: Dimension2) -> Vector2<S> {
         match dim {
             Dimension2::X => Vector2::x_axis(),
             Dimension2::Y => Vector2::y_axis(),
@@ -650,7 +657,7 @@ impl<Scalar: Float> Vector2<Scalar> {
 
     /// Creates and returns a new `Vector2` which points in the same direction as this vector, but with length 1.
     #[inline]
-    pub fn normalize(self) -> Vector2<Scalar> {
+    pub fn normalize(self) -> Vector2<S> {
         self / self.length()
     }
 
@@ -670,78 +677,78 @@ impl<Scalar: Float> Vector2<Scalar> {
 
     /// Returns the element-wise floor of this vector.
     #[inline]
-    pub fn floor(self) -> Vector2<Scalar> {
+    pub fn floor(self) -> Vector2<S> {
         Vector2::new(self.x.floor(), self.y.floor())
     }
 
     /// Returns the element-wise ceiling of this vector.
     #[inline]
-    pub fn ceil(self) -> Vector2<Scalar> {
+    pub fn ceil(self) -> Vector2<S> {
         Vector2::new(self.x.ceil(), self.y.ceil())
     }
 
     /// Returns the element-wise rounded value of this vector.
     #[inline]
-    pub fn round(self) -> Vector2<Scalar> {
+    pub fn round(self) -> Vector2<S> {
         Vector2::new(self.x.round(), self.y.round())
     }
 
     /// Returns the element-wise truncated value of this vector.
     #[inline]
-    pub fn trunc(self) -> Vector2<Scalar> {
+    pub fn trunc(self) -> Vector2<S> {
         Vector2::new(self.x.trunc(), self.y.trunc())
     }
 
     /// Returns the element-wise fractional value of this vector.
     #[inline]
-    pub fn fract(self) -> Vector2<Scalar> {
+    pub fn fract(self) -> Vector2<S> {
         Vector2::new(self.x.fract(), self.y.fract())
     }
 
     /// Returns the element-wise absolute value of this vector.
     #[inline]
-    pub fn abs(self) -> Vector2<Scalar> {
+    pub fn abs(self) -> Vector2<S> {
         Vector2::new(self.x.abs(), self.y.abs())
     }
 
     /// Returns a point with a permutation of the elements of this vector.
     #[inline]
-    pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Vector2<Scalar> {
+    pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Vector2<S> {
         Vector2::new(self[dim_x], self[dim_y])
     }
 }
 
-impl<Scalar: Float> MinMax for Vector2<Scalar> {
+impl<S: Scalar> MinMax for Vector2<S> {
     /// Returns the element-wise minimum of two vectors.
     #[inline]
-    fn min(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn min(self, v: Vector2<S>) -> Vector2<S> {
         Vector2::new(min(self.x, v.x), min(self.y, v.y))
     }
 
     /// Returns the element-wise maximum of two vectors.
     #[inline]
-    fn max(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn max(self, v: Vector2<S>) -> Vector2<S> {
         Vector2::new(max(self.x, v.x), max(self.y, v.y))
     }
 }
 
-impl<Scalar: Float> Length for Vector2<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Length for Vector2<S> {
+    type Output = S;
 
     /// Computes and returns the length of a vector.
     #[inline]
-    fn length(self) -> Scalar {
-        Scalar::sqrt(dot(self, self))
+    fn length(self) -> S {
+        S::sqrt(dot(self, self))
     }
 }
 
-impl<Scalar: Float> RelativeLength for Vector2<Scalar> {
+impl<S: Scalar> RelativeLength for Vector2<S> {
     /// Returns the shortest of two vectors.
     ///
     /// This is more computationally efficient than computing the lengths of the vectors and comparing them,
     /// because square root operations that are needed for computing the lengths are avoided.
     #[inline]
-    fn shortest(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn shortest(self, v: Vector2<S>) -> Vector2<S> {
         if dot(self, self) <= dot(v, v) { self } else { v }
     }
 
@@ -750,26 +757,26 @@ impl<Scalar: Float> RelativeLength for Vector2<Scalar> {
     /// This is more computationally efficient than computing the lengths of the vectors and comparing them,
     /// because square root operations that are needed for computing the lengths are avoided.
     #[inline]
-    fn longest(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn longest(self, v: Vector2<S>) -> Vector2<S> {
         if dot(self, self) > dot(v, v) { self } else { v }
     }
 }
 
-impl<Scalar: Float> DotProduct<Vector2<Scalar>> for Vector2<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> DotProduct<Vector2<S>> for Vector2<S> {
+    type Output = S;
 
     /// Computes and returns the dot product between two vectors.
     #[inline]
-    fn dot(self, v: Vector2<Scalar>) -> Scalar {
+    fn dot(self, v: Vector2<S>) -> S {
         self.x * v.x + self.y * v.y
     }
 }
 
-impl<Scalar: Float> Index<Dimension2> for Vector2<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Index<Dimension2> for Vector2<S> {
+    type Output = S;
 
     #[inline]
-    fn index(&self, dim: Dimension2) -> &Scalar {
+    fn index(&self, dim: Dimension2) -> &S {
         match dim {
             Dimension2::X => &self.x,
             Dimension2::Y => &self.y,
@@ -777,9 +784,9 @@ impl<Scalar: Float> Index<Dimension2> for Vector2<Scalar> {
     }
 }
 
-impl<Scalar: Float> IndexMut<Dimension2> for Vector2<Scalar> {
+impl<S: Scalar> IndexMut<Dimension2> for Vector2<S> {
     #[inline]
-    fn index_mut(&mut self, dim: Dimension2) -> &mut Scalar {
+    fn index_mut(&mut self, dim: Dimension2) -> &mut S {
         match dim {
             Dimension2::X => &mut self.x,
             Dimension2::Y => &mut self.y,
@@ -787,54 +794,54 @@ impl<Scalar: Float> IndexMut<Dimension2> for Vector2<Scalar> {
     }
 }
 
-impl<Scalar: Float> Add<Vector2<Scalar>> for Vector2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Add<Vector2<S>> for Vector2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn add(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn add(self, v: Vector2<S>) -> Vector2<S> {
         Vector2::new(self.x + v.x, self.y + v.y)
     }
 }
 
-impl<Scalar: Float + AddAssign> AddAssign<Vector2<Scalar>> for Vector2<Scalar> {
+impl<S: Scalar> AddAssign<Vector2<S>> for Vector2<S> {
     #[inline]
-    fn add_assign(&mut self, v: Vector2<Scalar>) {
+    fn add_assign(&mut self, v: Vector2<S>) {
         self.x += v.x;
         self.y += v.y;
     }
 }
 
-impl<Scalar: Float> Sub<Vector2<Scalar>> for Vector2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Sub<Vector2<S>> for Vector2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn sub(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn sub(self, v: Vector2<S>) -> Vector2<S> {
         Vector2::new(self.x - v.x, self.y - v.y)
     }
 }
 
-impl<Scalar: Float + SubAssign> SubAssign<Vector2<Scalar>> for Vector2<Scalar> {
+impl<S: Scalar> SubAssign<Vector2<S>> for Vector2<S> {
     #[inline]
-    fn sub_assign(&mut self, v: Vector2<Scalar>) {
+    fn sub_assign(&mut self, v: Vector2<S>) {
         self.x -= v.x;
         self.y -= v.y;
     }
 }
 
-impl<Scalar: Float> Neg for Vector2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Neg for Vector2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn neg(self) -> Vector2<Scalar> {
+    fn neg(self) -> Vector2<S> {
         Vector2::new(-self.x, -self.y)
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for Vector2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Mul<S> for Vector2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Vector2<Scalar> {
+    fn mul(self, s: S) -> Vector2<S> {
         Vector2::new(self.x * s, self.y * s)
     }
 }
@@ -857,114 +864,114 @@ impl Mul<Vector2d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for Vector2<Scalar> {
+impl<S: Scalar> MulAssign<S> for Vector2<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         self.x *= s;
         self.y *= s;
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for Vector2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Div<S> for Vector2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Vector2<Scalar> {
+    fn div(self, s: S) -> Vector2<S> {
         Vector2::new(self.x / s, self.y / s)
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for Vector2<Scalar> {
+impl<S: Scalar> DivAssign<S> for Vector2<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         self.x /= s;
         self.y /= s;
     }
 }
 
-impl<Scalar: Float> Transform<Vector2<Scalar>> for Transform2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Transform<Vector2<S>> for Transform2<S> {
+    type Output = Vector2<S>;
 
     /// Transforms a vector.
     #[inline]
-    fn transform(&self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn transform(&self, v: Vector2<S>) -> Vector2<S> {
         &*self.forward * v
     }
 }
 
-impl<Scalar: Float> From<Point2<Scalar>> for Vector2<Scalar> {
+impl<S: Scalar> From<Point2<S>> for Vector2<S> {
     #[inline]
-    fn from(p: Point2<Scalar>) -> Vector2<Scalar> {
+    fn from(p: Point2<S>) -> Vector2<S> {
         Vector2::new(p.x, p.y)
     }
 }
 
 // ===== Ray2 ==================================================================================================================================================
 
-impl<Scalar: Float> Ray2<Scalar> {
+impl<S: Scalar> Ray2<S> {
     /// Creates and returns a new `Ray2` with an origin point and direction vector.
     #[inline]
-    pub fn new(origin: Point2<Scalar>, direction: Vector2<Scalar>) -> Ray2<Scalar> {
+    pub fn new(origin: Point2<S>, direction: Vector2<S>) -> Ray2<S> {
         Ray2 { origin, direction }
     }
 
     /// Computes and returns a point at a distance along this ray.
     #[inline]
-    pub fn at(&self, distance: Scalar) -> Point2<Scalar> {
+    pub fn at(&self, distance: S) -> Point2<S> {
         self.origin + self.direction * distance
     }
 }
 
-impl<Scalar: Float> Transform<&Ray2<Scalar>> for Transform2<Scalar> {
-    type Output = Ray2<Scalar>;
+impl<S: Scalar> Transform<&Ray2<S>> for Transform2<S> {
+    type Output = Ray2<S>;
 
     /// Transforms a ray.
     #[inline]
-    fn transform(&self, ray: &Ray2<Scalar>) -> Ray2<Scalar> {
+    fn transform(&self, ray: &Ray2<S>) -> Ray2<S> {
         Ray2::new(self.transform(ray.origin), self.transform(ray.direction))
     }
 }
 
 // ===== BoundingBox2 ==========================================================================================================================================
 
-impl<Scalar: Float + FloatConstExt> BoundingBox2<Scalar> {
+impl<S: Scalar> BoundingBox2<S> {
     /// Creates and returns a new `BoundingBox2` with minimum and maximum corner points.
     #[inline]
-    pub fn new(min: Point2<Scalar>, max: Point2<Scalar>) -> BoundingBox2<Scalar> {
+    pub fn new(min: Point2<S>, max: Point2<S>) -> BoundingBox2<S> {
         BoundingBox2 { min, max }
     }
 
     /// Returns an empty `BoundingBox2`.
     #[inline]
-    pub fn empty() -> BoundingBox2<Scalar> {
+    pub fn empty() -> BoundingBox2<S> {
         BoundingBox2::new(
-            Point2::new(Scalar::infinity(), Scalar::infinity()),
-            Point2::new(Scalar::neg_infinity(), Scalar::neg_infinity()))
+            Point2::new(S::infinity(), S::infinity()),
+            Point2::new(S::neg_infinity(), S::neg_infinity()))
     }
 
     /// Returns an infinite `BoundingBox2` which contains all of 2D space.
     #[inline]
-    pub fn infinite() -> BoundingBox2<Scalar> {
+    pub fn infinite() -> BoundingBox2<S> {
         BoundingBox2::new(
-            Point2::new(Scalar::neg_infinity(), Scalar::neg_infinity()),
-            Point2::new(Scalar::infinity(), Scalar::infinity()))
+            Point2::new(S::neg_infinity(), S::neg_infinity()),
+            Point2::new(S::infinity(), S::infinity()))
     }
 
     /// Returns the width (extent in the X dimension) of this bounding box.
     #[inline]
-    pub fn width(&self) -> Scalar {
+    pub fn width(&self) -> S {
         self.max.x - self.min.x
     }
 
     /// Returns the height (extent in the Y dimension) of this bounding box.
     #[inline]
-    pub fn height(&self) -> Scalar {
+    pub fn height(&self) -> S {
         self.max.y - self.min.y
     }
 
     /// Returns the extent of this bounding box in a dimension.
     #[inline]
-    pub fn extent(&self, dim: Dimension2) -> Scalar {
+    pub fn extent(&self, dim: Dimension2) -> S {
         match dim {
             Dimension2::X => self.width(),
             Dimension2::Y => self.height(),
@@ -987,20 +994,20 @@ impl<Scalar: Float + FloatConstExt> BoundingBox2<Scalar> {
 
     /// Returns the area (width times height) of this bounding box.
     #[inline]
-    pub fn area(&self) -> Scalar {
+    pub fn area(&self) -> S {
         let d = self.diagonal();
         d.x * d.y
     }
 
     /// Returns the center point of this bounding box.
     #[inline]
-    pub fn center(&self) -> Point2<Scalar> {
-        self.min + self.diagonal() * Scalar::half()
+    pub fn center(&self) -> Point2<S> {
+        self.min + self.diagonal() * S::half()
     }
 
     /// Returns a corner point of this bounding box, indicated by an index (which must be between 0 and 3 inclusive).
     #[inline]
-    pub fn corner(&self, index: usize) -> Point2<Scalar> {
+    pub fn corner(&self, index: usize) -> Point2<S> {
         debug_assert!(index < 4, "Invalid corner index: {}", index);
         let x = if index & 0b01 == 0 { self.min.x } else { self.max.x };
         let y = if index & 0b10 == 0 { self.min.y } else { self.max.y };
@@ -1009,13 +1016,13 @@ impl<Scalar: Float + FloatConstExt> BoundingBox2<Scalar> {
 
     /// Returns the diagonal of this bounding box as a vector.
     #[inline]
-    pub fn diagonal(&self) -> Vector2<Scalar> {
+    pub fn diagonal(&self) -> Vector2<S> {
         self.max - self.min
     }
 
     /// Checks if two bounding boxes overlap.
     #[inline]
-    pub fn overlaps(&self, bb: &BoundingBox2<Scalar>) -> bool {
+    pub fn overlaps(&self, bb: &BoundingBox2<S>) -> bool {
         //@formatter:off
         self.max.x >= bb.min.x && self.min.x <= bb.max.x &&
         self.max.y >= bb.min.y && self.min.y <= bb.max.y
@@ -1024,7 +1031,7 @@ impl<Scalar: Float + FloatConstExt> BoundingBox2<Scalar> {
 
     /// Checks if a point is inside this bounding box.
     #[inline]
-    pub fn is_inside(&self, p: Point2<Scalar>) -> bool {
+    pub fn is_inside(&self, p: Point2<S>) -> bool {
         //@formatter:off
         p.x >= self.min.x && p.x <= self.max.x &&
         p.y >= self.min.y && p.y <= self.max.y
@@ -1034,7 +1041,7 @@ impl<Scalar: Float + FloatConstExt> BoundingBox2<Scalar> {
     /// Computes the closest intersection of this bounding box with a ray within a range.
     ///
     /// Returns a `Some` containing the closest intersection, or `None` if the ray does not intersect the bounding box within the range.
-    pub fn intersect_ray(&self, ray: &Ray2<Scalar>, range: &Range<Scalar>) -> Option<Scalar> {
+    pub fn intersect_ray(&self, ray: &Ray2<S>, range: &Range<S>) -> Option<S> {
         let (start, end) = (range.start, range.end);
 
         let d1 = (self.min.x - ray.origin.x) / ray.direction.x;
@@ -1061,32 +1068,32 @@ impl<Scalar: Float + FloatConstExt> BoundingBox2<Scalar> {
     }
 }
 
-impl<Scalar: Float + FloatConstExt> Union<&BoundingBox2<Scalar>> for BoundingBox2<Scalar> {
-    type Output = BoundingBox2<Scalar>;
+impl<S: Scalar> Union<&BoundingBox2<S>> for BoundingBox2<S> {
+    type Output = BoundingBox2<S>;
 
     /// Computes and returns the union between two bounding boxes.
     ///
     /// The union is the smallest bounding box that contains both bounding boxes.
     #[inline]
-    fn union(self, bb: &BoundingBox2<Scalar>) -> BoundingBox2<Scalar> {
+    fn union(self, bb: &BoundingBox2<S>) -> BoundingBox2<S> {
         BoundingBox2::new(min(self.min, bb.min), max(self.max, bb.max))
     }
 }
 
-impl<Scalar: Float + FloatConstExt> Union<Point2<Scalar>> for BoundingBox2<Scalar> {
-    type Output = BoundingBox2<Scalar>;
+impl<S: Scalar> Union<Point2<S>> for BoundingBox2<S> {
+    type Output = BoundingBox2<S>;
 
     /// Computes and returns the union between this bounding box and a point.
     ///
     /// The union is the smallest bounding box that contains both the bounding box and the point.
     #[inline]
-    fn union(self, p: Point2<Scalar>) -> BoundingBox2<Scalar> {
+    fn union(self, p: Point2<S>) -> BoundingBox2<S> {
         BoundingBox2::new(min(self.min, p), max(self.max, p))
     }
 }
 
-impl<Scalar: Float + FloatConstExt> Intersection<&BoundingBox2<Scalar>> for BoundingBox2<Scalar> {
-    type Output = BoundingBox2<Scalar>;
+impl<S: Scalar> Intersection<&BoundingBox2<S>> for BoundingBox2<S> {
+    type Output = BoundingBox2<S>;
 
     /// Computes and returns the intersection between two bounding boxes.
     ///
@@ -1094,7 +1101,7 @@ impl<Scalar: Float + FloatConstExt> Intersection<&BoundingBox2<Scalar>> for Boun
     ///
     /// Returns `Some` when the bounding boxes overlap; `None` if the bounding boxes do not overlap.
     #[inline]
-    fn intersection(self, bb: &BoundingBox2<Scalar>) -> Option<BoundingBox2<Scalar>> {
+    fn intersection(self, bb: &BoundingBox2<S>) -> Option<BoundingBox2<S>> {
         if self.overlaps(bb) {
             Some(BoundingBox2::new(max(self.min, bb.min), min(self.max, bb.max)))
         } else {
@@ -1103,11 +1110,11 @@ impl<Scalar: Float + FloatConstExt> Intersection<&BoundingBox2<Scalar>> for Boun
     }
 }
 
-impl<Scalar: Float + FloatConstExt + AddAssign> Transform<&BoundingBox2<Scalar>> for Transform2<Scalar> {
-    type Output = BoundingBox2<Scalar>;
+impl<S: Scalar> Transform<&BoundingBox2<S>> for Transform2<S> {
+    type Output = BoundingBox2<S>;
 
     /// Transforms a bounding box.
-    fn transform(&self, bb: &BoundingBox2<Scalar>) -> BoundingBox2<Scalar> {
+    fn transform(&self, bb: &BoundingBox2<S>) -> BoundingBox2<S> {
         let o = self.transform(bb.min);
         let d = self.transform(bb.diagonal());
 
@@ -1127,17 +1134,17 @@ impl<Scalar: Float + FloatConstExt + AddAssign> Transform<&BoundingBox2<Scalar>>
 
 // ===== Matrix3x3 =============================================================================================================================================
 
-impl<Scalar: Float> Matrix3x3<Scalar> {
+impl<S: Scalar> Matrix3x3<S> {
     /// Creates and returns a new `Matrix3x3` with the specified elements.
     #[inline]
-    pub fn new(m: [Scalar; 9]) -> Matrix3x3<Scalar> {
+    pub fn new(m: [S; 9]) -> Matrix3x3<S> {
         Matrix3x3 { m }
     }
 
     /// Returns a `Matrix3x3` which represents the identity matrix.
     #[inline]
-    pub fn identity() -> Matrix3x3<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn identity() -> Matrix3x3<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix3x3::new([
             i, o, o,
@@ -1148,8 +1155,8 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns a translation matrix which translates over a vector.
     #[inline]
-    pub fn translate(v: Vector2<Scalar>) -> Matrix3x3<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn translate(v: Vector2<S>) -> Matrix3x3<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix3x3::new([
             i, o, v.x,
@@ -1160,8 +1167,8 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns a rotation matrix which rotates around the origin.
     #[inline]
-    pub fn rotate(angle: Scalar) -> Matrix3x3<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn rotate(angle: S) -> Matrix3x3<S> {
+        let (o, i) = (S::zero(), S::one());
         let (sin, cos) = angle.sin_cos();
 
         Matrix3x3::new([
@@ -1173,8 +1180,8 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns a matrix which scales by factors in the X and Y dimensions.
     #[inline]
-    pub fn scale(sx: Scalar, sy: Scalar) -> Matrix3x3<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn scale(sx: S, sy: S) -> Matrix3x3<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix3x3::new([
             sx, o, o,
@@ -1185,8 +1192,8 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns a matrix which scales uniformly in all dimensions by a factor.
     #[inline]
-    pub fn scale_uniform(s: Scalar) -> Matrix3x3<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn scale_uniform(s: S) -> Matrix3x3<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix3x3::new([
             s, o, o,
@@ -1197,7 +1204,7 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns an element at a row and column of the matrix.
     #[inline]
-    pub fn get(&self, row: usize, col: usize) -> Scalar {
+    pub fn get(&self, row: usize, col: usize) -> S {
         debug_assert!(row < 3, "Invalid row index: {}", row);
         debug_assert!(col < 3, "Invalid column index: {}", row);
         self.m[row * 3 + col]
@@ -1205,7 +1212,7 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns a mutable reference to an element at a row and column of the matrix.
     #[inline]
-    pub fn get_mut(&mut self, row: usize, col: usize) -> &mut Scalar {
+    pub fn get_mut(&mut self, row: usize, col: usize) -> &mut S {
         debug_assert!(row < 3, "Invalid row index: {}", row);
         debug_assert!(col < 3, "Invalid column index: {}", row);
         &mut self.m[row * 3 + col]
@@ -1213,7 +1220,7 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Sets the value of an element at a row and column of the matrix.
     #[inline]
-    pub fn set(&mut self, row: usize, col: usize, value: Scalar) {
+    pub fn set(&mut self, row: usize, col: usize, value: S) {
         debug_assert!(row < 3, "Invalid row index: {}", row);
         debug_assert!(col < 3, "Invalid column index: {}", row);
         self.m[row * 3 + col] = value;
@@ -1221,7 +1228,7 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
 
     /// Returns the transpose of this matrix.
     #[inline]
-    pub fn transpose(&self) -> Matrix3x3<Scalar> {
+    pub fn transpose(&self) -> Matrix3x3<S> {
         Matrix3x3::new([
             self.m[0], self.m[3], self.m[6],
             self.m[1], self.m[4], self.m[7],
@@ -1232,11 +1239,11 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
     /// Computes and returns the inverse of this matrix.
     ///
     /// If this matrix is singular, a `NonInvertibleMatrixError` is returned.
-    pub fn inverse(&self) -> Result<Matrix3x3<Scalar>, NonInvertibleMatrixError> {
+    pub fn inverse(&self) -> Result<Matrix3x3<S>, NonInvertibleMatrixError> {
         let det = self.m[0] * self.m[4] * self.m[8] + self.m[1] * self.m[5] * self.m[6] + self.m[2] * self.m[3] * self.m[7]
             - self.m[2] * self.m[4] * self.m[6] - self.m[1] * self.m[3] * self.m[8] - self.m[0] * self.m[5] * self.m[7];
 
-        if det != Scalar::zero() {
+        if det != S::zero() {
             let inv_det = det.recip();
             Ok(Matrix3x3::new([
                 (self.m[4] * self.m[8] - self.m[5] * self.m[7]) * inv_det,
@@ -1255,11 +1262,11 @@ impl<Scalar: Float> Matrix3x3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for &Matrix3x3<Scalar> {
-    type Output = Matrix3x3<Scalar>;
+impl<S: Scalar> Mul<S> for &Matrix3x3<S> {
+    type Output = Matrix3x3<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Matrix3x3<Scalar> {
+    fn mul(self, s: S) -> Matrix3x3<S> {
         Matrix3x3::new(array![i => self.m[i] * s; 9])
     }
 }
@@ -1280,34 +1287,34 @@ impl Mul<&Matrix3x3d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for &mut Matrix3x3<Scalar> {
+impl<S: Scalar> MulAssign<S> for &mut Matrix3x3<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         for m in &mut self.m { *m *= s; }
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for &Matrix3x3<Scalar> {
-    type Output = Matrix3x3<Scalar>;
+impl<S: Scalar> Div<S> for &Matrix3x3<S> {
+    type Output = Matrix3x3<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Matrix3x3<Scalar> {
+    fn div(self, s: S) -> Matrix3x3<S> {
         Matrix3x3::new(array![i => self.m[i] / s; 9])
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for &mut Matrix3x3<Scalar> {
+impl<S: Scalar> DivAssign<S> for &mut Matrix3x3<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         for m in &mut self.m { *m /= s; }
     }
 }
 
-impl<Scalar: Float> Mul<Point2<Scalar>> for &Matrix3x3<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Mul<Point2<S>> for &Matrix3x3<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn mul(self, p: Point2<Scalar>) -> Point2<Scalar> {
+    fn mul(self, p: Point2<S>) -> Point2<S> {
         let x = self.m[0] * p.x + self.m[1] * p.y + self.m[2];
         let y = self.m[3] * p.x + self.m[4] * p.y + self.m[5];
         let w = self.m[6] * p.x + self.m[7] * p.y + self.m[8];
@@ -1315,11 +1322,11 @@ impl<Scalar: Float> Mul<Point2<Scalar>> for &Matrix3x3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<&Matrix3x3<Scalar>> for Point2<Scalar> {
-    type Output = Point2<Scalar>;
+impl<S: Scalar> Mul<&Matrix3x3<S>> for Point2<S> {
+    type Output = Point2<S>;
 
     #[inline]
-    fn mul(self, m: &Matrix3x3<Scalar>) -> Point2<Scalar> {
+    fn mul(self, m: &Matrix3x3<S>) -> Point2<S> {
         let x = self.x * m.m[0] + self.y * m.m[3] + m.m[6];
         let y = self.x * m.m[1] + self.y * m.m[4] + m.m[7];
         let w = self.x * m.m[2] + self.y * m.m[5] + m.m[8];
@@ -1327,33 +1334,33 @@ impl<Scalar: Float> Mul<&Matrix3x3<Scalar>> for Point2<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<Vector2<Scalar>> for &Matrix3x3<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Mul<Vector2<S>> for &Matrix3x3<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn mul(self, v: Vector2<Scalar>) -> Vector2<Scalar> {
+    fn mul(self, v: Vector2<S>) -> Vector2<S> {
         let x = self.m[0] * v.x + self.m[1] * v.y;
         let y = self.m[3] * v.x + self.m[4] * v.y;
         Vector2::new(x, y)
     }
 }
 
-impl<Scalar: Float> Mul<&Matrix3x3<Scalar>> for Vector2<Scalar> {
-    type Output = Vector2<Scalar>;
+impl<S: Scalar> Mul<&Matrix3x3<S>> for Vector2<S> {
+    type Output = Vector2<S>;
 
     #[inline]
-    fn mul(self, m: &Matrix3x3<Scalar>) -> Vector2<Scalar> {
+    fn mul(self, m: &Matrix3x3<S>) -> Vector2<S> {
         let x = self.x * m.m[0] + self.y * m.m[3];
         let y = self.x * m.m[1] + self.y * m.m[4];
         Vector2::new(x, y)
     }
 }
 
-impl<Scalar: Float> Mul<&Matrix3x3<Scalar>> for &Matrix3x3<Scalar> {
-    type Output = Matrix3x3<Scalar>;
+impl<S: Scalar> Mul<&Matrix3x3<S>> for &Matrix3x3<S> {
+    type Output = Matrix3x3<S>;
 
     #[inline]
-    fn mul(self, m: &Matrix3x3<Scalar>) -> Matrix3x3<Scalar> {
+    fn mul(self, m: &Matrix3x3<S>) -> Matrix3x3<S> {
         Matrix3x3::new([
             self.m[0] * m.m[0] + self.m[1] * m.m[3] + self.m[2] * m.m[6],
             self.m[0] * m.m[1] + self.m[1] * m.m[4] + self.m[2] * m.m[7],
@@ -1370,16 +1377,16 @@ impl<Scalar: Float> Mul<&Matrix3x3<Scalar>> for &Matrix3x3<Scalar> {
 
 // ===== Transform2 ============================================================================================================================================
 
-impl<Scalar: Float> Transform2<Scalar> {
+impl<S: Scalar> Transform2<S> {
     /// Creates and returns a new `Transform2` with a transformation matrix and its inverse.
     #[inline]
-    pub fn new(forward: Arc<Matrix3x3<Scalar>>, inverse: Arc<Matrix3x3<Scalar>>) -> Transform2<Scalar> {
+    pub fn new(forward: Arc<Matrix3x3<S>>, inverse: Arc<Matrix3x3<S>>) -> Transform2<S> {
         Transform2 { forward, inverse }
     }
 
     /// Returns a `Transform2` which represents the identity transform.
     #[inline]
-    pub fn identity() -> Transform2<Scalar> {
+    pub fn identity() -> Transform2<S> {
         let forward = Arc::new(Matrix3x3::identity());
         let inverse = forward.clone();
         Transform2::new(forward, inverse)
@@ -1387,13 +1394,13 @@ impl<Scalar: Float> Transform2<Scalar> {
 
     /// Returns a translation transform over a vector.
     #[inline]
-    pub fn translate(v: Vector2<Scalar>) -> Transform2<Scalar> {
+    pub fn translate(v: Vector2<S>) -> Transform2<S> {
         Transform2::new(Arc::new(Matrix3x3::translate(v)), Arc::new(Matrix3x3::translate(-v)))
     }
 
     /// Returns a rotation transform which rotates around the origin.
     #[inline]
-    pub fn rotate(angle: Scalar) -> Transform2<Scalar> {
+    pub fn rotate(angle: S) -> Transform2<S> {
         let forward = Matrix3x3::rotate(angle);
         let inverse = forward.transpose();
         Transform2::new(Arc::new(forward), Arc::new(inverse))
@@ -1401,34 +1408,34 @@ impl<Scalar: Float> Transform2<Scalar> {
 
     /// Returns a transform which scales by factors in the X and Y dimensions.
     #[inline]
-    pub fn scale(sx: Scalar, sy: Scalar) -> Transform2<Scalar> {
+    pub fn scale(sx: S, sy: S) -> Transform2<S> {
         Transform2::new(Arc::new(Matrix3x3::scale(sx, sy)), Arc::new(Matrix3x3::scale(sx.recip(), sy.recip())))
     }
 
     /// Returns a transform which scales uniformly in all dimensions by a factor.
     #[inline]
-    pub fn scale_uniform(s: Scalar) -> Transform2<Scalar> {
+    pub fn scale_uniform(s: S) -> Transform2<S> {
         Transform2::new(Arc::new(Matrix3x3::scale_uniform(s)), Arc::new(Matrix3x3::scale_uniform(s.recip())))
     }
 
     /// Computes and returns a composite transform, which first applies this and then the other transform.
     #[inline]
-    pub fn and_then(&self, transform: &Transform2<Scalar>) -> Transform2<Scalar> {
+    pub fn and_then(&self, transform: &Transform2<S>) -> Transform2<S> {
         Transform2::new(Arc::new(&*transform.forward * &*self.forward), Arc::new(&*self.inverse * &*transform.inverse))
     }
 
     /// Returns the inverse of this transform.
     #[inline]
-    pub fn inverse(&self) -> Transform2<Scalar> {
+    pub fn inverse(&self) -> Transform2<S> {
         Transform2::new(self.inverse.clone(), self.forward.clone())
     }
 }
 
-impl<Scalar: Float> TryFrom<Matrix3x3<Scalar>> for Transform2<Scalar> {
+impl<S: Scalar> TryFrom<Matrix3x3<S>> for Transform2<S> {
     type Error = NonInvertibleMatrixError;
 
     #[inline]
-    fn try_from(forward: Matrix3x3<Scalar>) -> Result<Transform2<Scalar>, NonInvertibleMatrixError> {
+    fn try_from(forward: Matrix3x3<S>) -> Result<Transform2<S>, NonInvertibleMatrixError> {
         let inverse = forward.inverse()?;
         Ok(Transform2::new(Arc::new(forward), Arc::new(inverse)))
     }
@@ -1436,17 +1443,17 @@ impl<Scalar: Float> TryFrom<Matrix3x3<Scalar>> for Transform2<Scalar> {
 
 // ===== Point3 ================================================================================================================================================
 
-impl<Scalar: Float> Point3<Scalar> {
+impl<S: Scalar> Point3<S> {
     /// Creates and returns a new `Point3` with x, y and z coordinates.
     #[inline]
-    pub fn new(x: Scalar, y: Scalar, z: Scalar) -> Point3<Scalar> {
+    pub fn new(x: S, y: S, z: S) -> Point3<S> {
         Point3 { x, y, z }
     }
 
     /// Returns a `Point3` which represents the origin (x = 0, y = 0 and z = 0).
     #[inline]
-    pub fn origin() -> Point3<Scalar> {
-        Point3::new(Scalar::zero(), Scalar::zero(), Scalar::zero())
+    pub fn origin() -> Point3<S> {
+        Point3::new(S::zero(), S::zero(), S::zero())
     }
 
     /// Returns the dimension with the smallest extent of this point.
@@ -1465,78 +1472,78 @@ impl<Scalar: Float> Point3<Scalar> {
 
     /// Returns the element-wise floor of this point.
     #[inline]
-    pub fn floor(self) -> Point3<Scalar> {
+    pub fn floor(self) -> Point3<S> {
         Point3::new(self.x.floor(), self.y.floor(), self.z.floor())
     }
 
     /// Returns the element-wise ceiling of this point.
     #[inline]
-    pub fn ceil(self) -> Point3<Scalar> {
+    pub fn ceil(self) -> Point3<S> {
         Point3::new(self.x.ceil(), self.y.ceil(), self.z.ceil())
     }
 
     /// Returns the element-wise rounded value of this point.
     #[inline]
-    pub fn round(self) -> Point3<Scalar> {
+    pub fn round(self) -> Point3<S> {
         Point3::new(self.x.round(), self.y.round(), self.z.round())
     }
 
     /// Returns the element-wise truncated value of this point.
     #[inline]
-    pub fn trunc(self) -> Point3<Scalar> {
+    pub fn trunc(self) -> Point3<S> {
         Point3::new(self.x.trunc(), self.y.trunc(), self.z.trunc())
     }
 
     /// Returns the element-wise fractional value of this point.
     #[inline]
-    pub fn fract(self) -> Point3<Scalar> {
+    pub fn fract(self) -> Point3<S> {
         Point3::new(self.x.fract(), self.y.fract(), self.z.fract())
     }
 
     /// Returns the element-wise absolute value of this point.
     #[inline]
-    pub fn abs(self) -> Point3<Scalar> {
+    pub fn abs(self) -> Point3<S> {
         Point3::new(self.x.abs(), self.y.abs(), self.z.abs())
     }
 
     /// Returns a point with a permutation of the elements of this point.
     #[inline]
-    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Point3<Scalar> {
+    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Point3<S> {
         Point3::new(self[dim_x], self[dim_y], self[dim_z])
     }
 }
 
-impl<Scalar: Float> MinMax for Point3<Scalar> {
+impl<S: Scalar> MinMax for Point3<S> {
     /// Returns the element-wise minimum of two points.
     #[inline]
-    fn min(self, p: Point3<Scalar>) -> Point3<Scalar> {
+    fn min(self, p: Point3<S>) -> Point3<S> {
         Point3::new(min(self.x, p.x), min(self.y, p.y), min(self.z, p.z))
     }
 
     /// Returns the element-wise maximum of two points.
     #[inline]
-    fn max(self, p: Point3<Scalar>) -> Point3<Scalar> {
+    fn max(self, p: Point3<S>) -> Point3<S> {
         Point3::new(max(self.x, p.x), max(self.y, p.y), max(self.z, p.z))
     }
 }
 
-impl<Scalar: Float> Distance for Point3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Distance for Point3<S> {
+    type Output = S;
 
     /// Computes and returns the distance between two points.
     #[inline]
-    fn distance(self, p: Point3<Scalar>) -> Scalar {
+    fn distance(self, p: Point3<S>) -> S {
         (p - self).length()
     }
 }
 
-impl<Scalar: Float> RelativeDistance for Point3<Scalar> {
+impl<S: Scalar> RelativeDistance for Point3<S> {
     /// Checks which of the points `p1` and `p2` is closest to this point and returns the closest one.
     ///
     /// This is more computationally efficient than computing the distance between this point and the points `p1` and `p2` and comparing the distances,
     /// because square root operations that are needed for computing the distances are avoided.
     #[inline]
-    fn closest(self, p1: Point3<Scalar>, p2: Point3<Scalar>) -> Point3<Scalar> {
+    fn closest(self, p1: Point3<S>, p2: Point3<S>) -> Point3<S> {
         let (dp1, dp2) = (p1 - self, p2 - self);
         if dot(dp1, dp1) <= dot(dp2, dp2) { p1 } else { p2 }
     }
@@ -1546,17 +1553,17 @@ impl<Scalar: Float> RelativeDistance for Point3<Scalar> {
     /// This is more computationally efficient than computing the distance between this point and the points `p1` and `p2` and comparing the distances,
     /// because square root operations that are needed for computing the distances are avoided.
     #[inline]
-    fn farthest(self, p1: Point3<Scalar>, p2: Point3<Scalar>) -> Point3<Scalar> {
+    fn farthest(self, p1: Point3<S>, p2: Point3<S>) -> Point3<S> {
         let (dp1, dp2) = (p1 - self, p2 - self);
         if dot(dp1, dp1) > dot(dp2, dp2) { p1 } else { p2 }
     }
 }
 
-impl<Scalar: Float> Index<Dimension3> for Point3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Index<Dimension3> for Point3<S> {
+    type Output = S;
 
     #[inline]
-    fn index(&self, dim: Dimension3) -> &Scalar {
+    fn index(&self, dim: Dimension3) -> &S {
         match dim {
             Dimension3::X => &self.x,
             Dimension3::Y => &self.y,
@@ -1565,9 +1572,9 @@ impl<Scalar: Float> Index<Dimension3> for Point3<Scalar> {
     }
 }
 
-impl<Scalar: Float> IndexMut<Dimension3> for Point3<Scalar> {
+impl<S: Scalar> IndexMut<Dimension3> for Point3<S> {
     #[inline]
-    fn index_mut(&mut self, dim: Dimension3) -> &mut Scalar {
+    fn index_mut(&mut self, dim: Dimension3) -> &mut S {
         match dim {
             Dimension3::X => &mut self.x,
             Dimension3::Y => &mut self.y,
@@ -1576,65 +1583,65 @@ impl<Scalar: Float> IndexMut<Dimension3> for Point3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Add<Vector3<Scalar>> for Point3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Add<Vector3<S>> for Point3<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn add(self, v: Vector3<Scalar>) -> Point3<Scalar> {
+    fn add(self, v: Vector3<S>) -> Point3<S> {
         Point3::new(self.x + v.x, self.y + v.y, self.z + v.z)
     }
 }
 
-impl<Scalar: Float + AddAssign> AddAssign<Vector3<Scalar>> for Point3<Scalar> {
+impl<S: Scalar> AddAssign<Vector3<S>> for Point3<S> {
     #[inline]
-    fn add_assign(&mut self, v: Vector3<Scalar>) {
+    fn add_assign(&mut self, v: Vector3<S>) {
         self.x += v.x;
         self.y += v.y;
         self.z += v.z;
     }
 }
 
-impl<Scalar: Float> Sub<Vector3<Scalar>> for Point3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Sub<Vector3<S>> for Point3<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn sub(self, v: Vector3<Scalar>) -> Point3<Scalar> {
+    fn sub(self, v: Vector3<S>) -> Point3<S> {
         Point3::new(self.x - v.x, self.y - v.y, self.z - v.z)
     }
 }
 
-impl<Scalar: Float + SubAssign> SubAssign<Vector3<Scalar>> for Point3<Scalar> {
+impl<S: Scalar> SubAssign<Vector3<S>> for Point3<S> {
     #[inline]
-    fn sub_assign(&mut self, v: Vector3<Scalar>) {
+    fn sub_assign(&mut self, v: Vector3<S>) {
         self.x -= v.x;
         self.y -= v.y;
         self.z -= v.z;
     }
 }
 
-impl<Scalar: Float> Sub<Point3<Scalar>> for Point3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Sub<Point3<S>> for Point3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn sub(self, p: Point3<Scalar>) -> Vector3<Scalar> {
+    fn sub(self, p: Point3<S>) -> Vector3<S> {
         Vector3::new(self.x - p.x, self.y - p.y, self.z - p.z)
     }
 }
 
-impl<Scalar: Float> Neg for Point3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Neg for Point3<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn neg(self) -> Point3<Scalar> {
+    fn neg(self) -> Point3<S> {
         Point3::new(-self.x, -self.y, -self.z)
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for Point3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Mul<S> for Point3<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Point3<Scalar> {
+    fn mul(self, s: S) -> Point3<S> {
         Point3::new(self.x * s, self.y * s, self.z * s)
     }
 }
@@ -1657,86 +1664,86 @@ impl Mul<Point3d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for Point3<Scalar> {
+impl<S: Scalar> MulAssign<S> for Point3<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         self.x *= s;
         self.y *= s;
         self.z *= s;
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for Point3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Div<S> for Point3<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Point3<Scalar> {
+    fn div(self, s: S) -> Point3<S> {
         Point3::new(self.x / s, self.y / s, self.z / s)
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for Point3<Scalar> {
+impl<S: Scalar> DivAssign<S> for Point3<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         self.x /= s;
         self.y /= s;
         self.z /= s;
     }
 }
 
-impl<Scalar: Float> Transform<Point3<Scalar>> for Transform3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Transform<Point3<S>> for Transform3<S> {
+    type Output = Point3<S>;
 
     /// Transforms a point.
     #[inline]
-    fn transform(&self, p: Point3<Scalar>) -> Point3<Scalar> {
+    fn transform(&self, p: Point3<S>) -> Point3<S> {
         &*self.forward * p
     }
 }
 
-impl<Scalar: Float> From<Vector3<Scalar>> for Point3<Scalar> {
+impl<S: Scalar> From<Vector3<S>> for Point3<S> {
     #[inline]
-    fn from(v: Vector3<Scalar>) -> Point3<Scalar> {
+    fn from(v: Vector3<S>) -> Point3<S> {
         Point3::new(v.x, v.y, v.z)
     }
 }
 
 // ===== Vector3 ===============================================================================================================================================
 
-impl<Scalar: Float> Vector3<Scalar> {
+impl<S: Scalar> Vector3<S> {
     /// Creates and returns a new `Vector3` with x, y and z coordinates.
     #[inline]
-    pub fn new(x: Scalar, y: Scalar, z: Scalar) -> Vector3<Scalar> {
+    pub fn new(x: S, y: S, z: S) -> Vector3<S> {
         Vector3 { x, y, z }
     }
 
     /// Returns a `Vector3` which represents the zero vector (x = 0, y = 0 and z = 0).
     #[inline]
-    pub fn zero() -> Vector3<Scalar> {
-        Vector3::new(Scalar::zero(), Scalar::zero(), Scalar::zero())
+    pub fn zero() -> Vector3<S> {
+        Vector3::new(S::zero(), S::zero(), S::zero())
     }
 
     /// Returns a `Vector3` of length 1 which represents the X axis (x = 1, y = 0 and z = 0).
     #[inline]
-    pub fn x_axis() -> Vector3<Scalar> {
-        Vector3::new(Scalar::one(), Scalar::zero(), Scalar::zero())
+    pub fn x_axis() -> Vector3<S> {
+        Vector3::new(S::one(), S::zero(), S::zero())
     }
 
     /// Returns a `Vector3` of length 1 which represents the Y axis (x = 0, y = 1 and z = 0).
     #[inline]
-    pub fn y_axis() -> Vector3<Scalar> {
-        Vector3::new(Scalar::zero(), Scalar::one(), Scalar::zero())
+    pub fn y_axis() -> Vector3<S> {
+        Vector3::new(S::zero(), S::one(), S::zero())
     }
 
     /// Returns a `Vector3` of length 1 which represents the Z axis (x = 0, y = 0 and z = 1).
     #[inline]
-    pub fn z_axis() -> Vector3<Scalar> {
-        Vector3::new(Scalar::zero(), Scalar::zero(), Scalar::one())
+    pub fn z_axis() -> Vector3<S> {
+        Vector3::new(S::zero(), S::zero(), S::one())
     }
 
     /// Returns a `Vector3` of length 1 which represents the axis specified by a dimension.
     #[inline]
-    pub fn axis(dim: Dimension3) -> Vector3<Scalar> {
+    pub fn axis(dim: Dimension3) -> Vector3<S> {
         match dim {
             Dimension3::X => Vector3::x_axis(),
             Dimension3::Y => Vector3::y_axis(),
@@ -1746,7 +1753,7 @@ impl<Scalar: Float> Vector3<Scalar> {
 
     /// Creates and returns a new `Vector3` which points in the same direction as this vector, but with length 1.
     #[inline]
-    pub fn normalize(self) -> Vector3<Scalar> {
+    pub fn normalize(self) -> Vector3<S> {
         self / self.length()
     }
 
@@ -1766,78 +1773,78 @@ impl<Scalar: Float> Vector3<Scalar> {
 
     /// Returns the element-wise floor of this vector.
     #[inline]
-    pub fn floor(self) -> Vector3<Scalar> {
+    pub fn floor(self) -> Vector3<S> {
         Vector3::new(self.x.floor(), self.y.floor(), self.z.floor())
     }
 
     /// Returns the element-wise ceiling of this vector.
     #[inline]
-    pub fn ceil(self) -> Vector3<Scalar> {
+    pub fn ceil(self) -> Vector3<S> {
         Vector3::new(self.x.ceil(), self.y.ceil(), self.z.ceil())
     }
 
     /// Returns the element-wise rounded value of this vector.
     #[inline]
-    pub fn round(self) -> Vector3<Scalar> {
+    pub fn round(self) -> Vector3<S> {
         Vector3::new(self.x.round(), self.y.round(), self.z.round())
     }
 
     /// Returns the element-wise truncated value of this vector.
     #[inline]
-    pub fn trunc(self) -> Vector3<Scalar> {
+    pub fn trunc(self) -> Vector3<S> {
         Vector3::new(self.x.trunc(), self.y.trunc(), self.z.trunc())
     }
 
     /// Returns the element-wise fractional value of this vector.
     #[inline]
-    pub fn fract(self) -> Vector3<Scalar> {
+    pub fn fract(self) -> Vector3<S> {
         Vector3::new(self.x.fract(), self.y.fract(), self.z.fract())
     }
 
     /// Returns the element-wise absolute value of this vector.
     #[inline]
-    pub fn abs(self) -> Vector3<Scalar> {
+    pub fn abs(self) -> Vector3<S> {
         Vector3::new(self.x.abs(), self.y.abs(), self.z.abs())
     }
 
     /// Returns a point with a permutation of the elements of this vector.
     #[inline]
-    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Vector3<Scalar> {
+    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Vector3<S> {
         Vector3::new(self[dim_x], self[dim_y], self[dim_z])
     }
 }
 
-impl<Scalar: Float> MinMax for Vector3<Scalar> {
+impl<S: Scalar> MinMax for Vector3<S> {
     /// Returns the element-wise minimum of two vectors.
     #[inline]
-    fn min(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn min(self, v: Vector3<S>) -> Vector3<S> {
         Vector3::new(min(self.x, v.x), min(self.y, v.y), min(self.z, v.z))
     }
 
     /// Returns the element-wise maximum of two vectors.
     #[inline]
-    fn max(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn max(self, v: Vector3<S>) -> Vector3<S> {
         Vector3::new(max(self.x, v.x), max(self.y, v.y), max(self.z, v.z))
     }
 }
 
-impl<Scalar: Float> Length for Vector3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Length for Vector3<S> {
+    type Output = S;
 
     /// Computes and returns the length of a vector.
     #[inline]
-    fn length(self) -> Scalar {
-        Scalar::sqrt(dot(self, self))
+    fn length(self) -> S {
+        S::sqrt(dot(self, self))
     }
 }
 
-impl<Scalar: Float> RelativeLength for Vector3<Scalar> {
+impl<S: Scalar> RelativeLength for Vector3<S> {
     /// Returns the shortest of two vectors.
     ///
     /// This is more computationally efficient than computing the lengths of the vectors and comparing them,
     /// because square root operations that are needed for computing the lengths are avoided.
     #[inline]
-    fn shortest(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn shortest(self, v: Vector3<S>) -> Vector3<S> {
         if dot(self, self) <= dot(v, v) { self } else { v }
     }
 
@@ -1846,46 +1853,46 @@ impl<Scalar: Float> RelativeLength for Vector3<Scalar> {
     /// This is more computationally efficient than computing the lengths of the vectors and comparing them,
     /// because square root operations that are needed for computing the lengths are avoided.
     #[inline]
-    fn longest(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn longest(self, v: Vector3<S>) -> Vector3<S> {
         if dot(self, self) > dot(v, v) { self } else { v }
     }
 }
 
-impl<Scalar: Float> DotProduct<Vector3<Scalar>> for Vector3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> DotProduct<Vector3<S>> for Vector3<S> {
+    type Output = S;
 
     /// Computes and returns the dot product between two vectors.
     #[inline]
-    fn dot(self, v: Vector3<Scalar>) -> Scalar {
+    fn dot(self, v: Vector3<S>) -> S {
         self.x * v.x + self.y * v.y + self.z * v.z
     }
 }
 
-impl<Scalar: Float> DotProduct<Normal3<Scalar>> for Vector3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> DotProduct<Normal3<S>> for Vector3<S> {
+    type Output = S;
 
     /// Computes and returns the dot product between this vector and a normal.
     #[inline]
-    fn dot(self, n: Normal3<Scalar>) -> Scalar {
+    fn dot(self, n: Normal3<S>) -> S {
         self.x * n.x + self.y * n.y + self.z * n.z
     }
 }
 
-impl<Scalar: Float> CrossProduct<Vector3<Scalar>> for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> CrossProduct<Vector3<S>> for Vector3<S> {
+    type Output = Vector3<S>;
 
     /// Computes and returns the cross product between two vectors.
     #[inline]
-    fn cross(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn cross(self, v: Vector3<S>) -> Vector3<S> {
         Vector3::new(self.y * v.z - self.z * v.y, self.z * v.x - self.x * v.z, self.x * v.y - self.y * v.x)
     }
 }
 
-impl<Scalar: Float> Index<Dimension3> for Vector3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Index<Dimension3> for Vector3<S> {
+    type Output = S;
 
     #[inline]
-    fn index(&self, dim: Dimension3) -> &Scalar {
+    fn index(&self, dim: Dimension3) -> &S {
         match dim {
             Dimension3::X => &self.x,
             Dimension3::Y => &self.y,
@@ -1894,9 +1901,9 @@ impl<Scalar: Float> Index<Dimension3> for Vector3<Scalar> {
     }
 }
 
-impl<Scalar: Float> IndexMut<Dimension3> for Vector3<Scalar> {
+impl<S: Scalar> IndexMut<Dimension3> for Vector3<S> {
     #[inline]
-    fn index_mut(&mut self, dim: Dimension3) -> &mut Scalar {
+    fn index_mut(&mut self, dim: Dimension3) -> &mut S {
         match dim {
             Dimension3::X => &mut self.x,
             Dimension3::Y => &mut self.y,
@@ -1905,56 +1912,56 @@ impl<Scalar: Float> IndexMut<Dimension3> for Vector3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Add<Vector3<Scalar>> for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Add<Vector3<S>> for Vector3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn add(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn add(self, v: Vector3<S>) -> Vector3<S> {
         Vector3::new(self.x + v.x, self.y + v.y, self.z + v.z)
     }
 }
 
-impl<Scalar: Float + AddAssign> AddAssign<Vector3<Scalar>> for Vector3<Scalar> {
+impl<S: Scalar> AddAssign<Vector3<S>> for Vector3<S> {
     #[inline]
-    fn add_assign(&mut self, v: Vector3<Scalar>) {
+    fn add_assign(&mut self, v: Vector3<S>) {
         self.x += v.x;
         self.y += v.y;
         self.z += v.z;
     }
 }
 
-impl<Scalar: Float> Sub<Vector3<Scalar>> for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Sub<Vector3<S>> for Vector3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn sub(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn sub(self, v: Vector3<S>) -> Vector3<S> {
         Vector3::new(self.x - v.x, self.y - v.y, self.z - v.z)
     }
 }
 
-impl<Scalar: Float + SubAssign> SubAssign<Vector3<Scalar>> for Vector3<Scalar> {
+impl<S: Scalar> SubAssign<Vector3<S>> for Vector3<S> {
     #[inline]
-    fn sub_assign(&mut self, v: Vector3<Scalar>) {
+    fn sub_assign(&mut self, v: Vector3<S>) {
         self.x -= v.x;
         self.y -= v.y;
         self.z -= v.z;
     }
 }
 
-impl<Scalar: Float> Neg for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Neg for Vector3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn neg(self) -> Vector3<Scalar> {
+    fn neg(self) -> Vector3<S> {
         Vector3::new(-self.x, -self.y, -self.z)
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Mul<S> for Vector3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Vector3<Scalar> {
+    fn mul(self, s: S) -> Vector3<S> {
         Vector3::new(self.x * s, self.y * s, self.z * s)
     }
 }
@@ -1977,93 +1984,93 @@ impl Mul<Vector3d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for Vector3<Scalar> {
+impl<S: Scalar> MulAssign<S> for Vector3<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         self.x *= s;
         self.y *= s;
         self.z *= s;
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Div<S> for Vector3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Vector3<Scalar> {
+    fn div(self, s: S) -> Vector3<S> {
         Vector3::new(self.x / s, self.y / s, self.z / s)
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for Vector3<Scalar> {
+impl<S: Scalar> DivAssign<S> for Vector3<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         self.x /= s;
         self.y /= s;
         self.z /= s;
     }
 }
 
-impl<Scalar: Float> Transform<Vector3<Scalar>> for Transform3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Transform<Vector3<S>> for Transform3<S> {
+    type Output = Vector3<S>;
 
     /// Transforms a vector.
     #[inline]
-    fn transform(&self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn transform(&self, v: Vector3<S>) -> Vector3<S> {
         &*self.forward * v
     }
 }
 
-impl<Scalar: Float> From<Point3<Scalar>> for Vector3<Scalar> {
+impl<S: Scalar> From<Point3<S>> for Vector3<S> {
     #[inline]
-    fn from(p: Point3<Scalar>) -> Vector3<Scalar> {
+    fn from(p: Point3<S>) -> Vector3<S> {
         Vector3::new(p.x, p.y, p.z)
     }
 }
 
-impl<Scalar: Float> From<Normal3<Scalar>> for Vector3<Scalar> {
+impl<S: Scalar> From<Normal3<S>> for Vector3<S> {
     #[inline]
-    fn from(n: Normal3<Scalar>) -> Self {
+    fn from(n: Normal3<S>) -> Self {
         Vector3::new(n.x, n.y, n.z)
     }
 }
 
 // ===== Normal3 ===============================================================================================================================================
 
-impl<Scalar: Float> Normal3<Scalar> {
+impl<S: Scalar> Normal3<S> {
     /// Creates and returns a new `Normal3` with x, y and z coordinates.
     #[inline]
-    pub fn new(x: Scalar, y: Scalar, z: Scalar) -> Normal3<Scalar> {
+    pub fn new(x: S, y: S, z: S) -> Normal3<S> {
         Normal3 { x, y, z }
     }
 
     /// Returns a `Normal3` which represents the zero normal (x = 0, y = 0 and z = 0).
     #[inline]
-    pub fn zero() -> Normal3<Scalar> {
-        Normal3::new(Scalar::zero(), Scalar::zero(), Scalar::zero())
+    pub fn zero() -> Normal3<S> {
+        Normal3::new(S::zero(), S::zero(), S::zero())
     }
 
     /// Returns a `Normal3` of length 1 which represents the X axis (x = 1, y = 0 and z = 0).
     #[inline]
-    pub fn x_axis() -> Normal3<Scalar> {
-        Normal3::new(Scalar::one(), Scalar::zero(), Scalar::zero())
+    pub fn x_axis() -> Normal3<S> {
+        Normal3::new(S::one(), S::zero(), S::zero())
     }
 
     /// Returns a `Normal3` of length 1 which represents the Y axis (x = 0, y = 1 and z = 0).
     #[inline]
-    pub fn y_axis() -> Normal3<Scalar> {
-        Normal3::new(Scalar::zero(), Scalar::one(), Scalar::zero())
+    pub fn y_axis() -> Normal3<S> {
+        Normal3::new(S::zero(), S::one(), S::zero())
     }
 
     /// Returns a `Normal3` of length 1 which represents the Z axis (x = 0, y = 0 and z = 1).
     #[inline]
-    pub fn z_axis() -> Normal3<Scalar> {
-        Normal3::new(Scalar::zero(), Scalar::zero(), Scalar::one())
+    pub fn z_axis() -> Normal3<S> {
+        Normal3::new(S::zero(), S::zero(), S::one())
     }
 
     /// Returns a `Normal3` of length 1 which represents the axis specified by a dimension.
     #[inline]
-    pub fn axis(dim: Dimension3) -> Normal3<Scalar> {
+    pub fn axis(dim: Dimension3) -> Normal3<S> {
         match dim {
             Dimension3::X => Normal3::x_axis(),
             Dimension3::Y => Normal3::y_axis(),
@@ -2073,7 +2080,7 @@ impl<Scalar: Float> Normal3<Scalar> {
 
     /// Creates and returns a new `Normal3` which points in the same direction as this normal, but with length 1.
     #[inline]
-    pub fn normalize(self) -> Normal3<Scalar> {
+    pub fn normalize(self) -> Normal3<S> {
         self / self.length()
     }
 
@@ -2093,78 +2100,78 @@ impl<Scalar: Float> Normal3<Scalar> {
 
     /// Returns the element-wise floor of this normal.
     #[inline]
-    pub fn floor(self) -> Normal3<Scalar> {
+    pub fn floor(self) -> Normal3<S> {
         Normal3::new(self.x.floor(), self.y.floor(), self.z.floor())
     }
 
     /// Returns the element-wise ceiling of this normal.
     #[inline]
-    pub fn ceil(self) -> Normal3<Scalar> {
+    pub fn ceil(self) -> Normal3<S> {
         Normal3::new(self.x.ceil(), self.y.ceil(), self.z.ceil())
     }
 
     /// Returns the element-wise rounded value of this normal.
     #[inline]
-    pub fn round(self) -> Normal3<Scalar> {
+    pub fn round(self) -> Normal3<S> {
         Normal3::new(self.x.round(), self.y.round(), self.z.round())
     }
 
     /// Returns the element-wise truncated value of this normal.
     #[inline]
-    pub fn trunc(self) -> Normal3<Scalar> {
+    pub fn trunc(self) -> Normal3<S> {
         Normal3::new(self.x.trunc(), self.y.trunc(), self.z.trunc())
     }
 
     /// Returns the element-wise fractional value of this normal.
     #[inline]
-    pub fn fract(self) -> Normal3<Scalar> {
+    pub fn fract(self) -> Normal3<S> {
         Normal3::new(self.x.fract(), self.y.fract(), self.z.fract())
     }
 
     /// Returns the element-wise absolute value of this normal.
     #[inline]
-    pub fn abs(self) -> Normal3<Scalar> {
+    pub fn abs(self) -> Normal3<S> {
         Normal3::new(self.x.abs(), self.y.abs(), self.z.abs())
     }
 
     /// Returns a point with a permutation of the elements of this normal.
     #[inline]
-    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Normal3<Scalar> {
+    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Normal3<S> {
         Normal3::new(self[dim_x], self[dim_y], self[dim_z])
     }
 }
 
-impl<Scalar: Float> MinMax for Normal3<Scalar> {
+impl<S: Scalar> MinMax for Normal3<S> {
     /// Returns the element-wise minimum of two normals.
     #[inline]
-    fn min(self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn min(self, n: Normal3<S>) -> Normal3<S> {
         Normal3::new(min(self.x, n.x), min(self.y, n.y), min(self.z, n.z))
     }
 
     /// Returns the element-wise maximum of two normals.
     #[inline]
-    fn max(self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn max(self, n: Normal3<S>) -> Normal3<S> {
         Normal3::new(max(self.x, n.x), max(self.y, n.y), max(self.z, n.z))
     }
 }
 
-impl<Scalar: Float> Length for Normal3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Length for Normal3<S> {
+    type Output = S;
 
     /// Computes and returns the length of a normal.
     #[inline]
-    fn length(self) -> Scalar {
-        Scalar::sqrt(dot(self, self))
+    fn length(self) -> S {
+        S::sqrt(dot(self, self))
     }
 }
 
-impl<Scalar: Float> RelativeLength for Normal3<Scalar> {
+impl<S: Scalar> RelativeLength for Normal3<S> {
     /// Returns the shortest of two normals.
     ///
     /// This is more computationally efficient than computing the lengths of the normals and comparing them,
     /// because square root operations that are needed for computing the lengths are avoided.
     #[inline]
-    fn shortest(self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn shortest(self, n: Normal3<S>) -> Normal3<S> {
         if dot(self, self) <= dot(n, n) { self } else { n }
     }
 
@@ -2173,36 +2180,36 @@ impl<Scalar: Float> RelativeLength for Normal3<Scalar> {
     /// This is more computationally efficient than computing the lengths of the normals and comparing them,
     /// because square root operations that are needed for computing the lengths are avoided.
     #[inline]
-    fn longest(self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn longest(self, n: Normal3<S>) -> Normal3<S> {
         if dot(self, self) > dot(n, n) { self } else { n }
     }
 }
 
-impl<Scalar: Float> DotProduct<Normal3<Scalar>> for Normal3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> DotProduct<Normal3<S>> for Normal3<S> {
+    type Output = S;
 
     /// Computes and returns the dot product between two normals.
     #[inline]
-    fn dot(self, n: Normal3<Scalar>) -> Scalar {
+    fn dot(self, n: Normal3<S>) -> S {
         self.x * n.x + self.y * n.y + self.z * n.z
     }
 }
 
-impl<Scalar: Float> DotProduct<Vector3<Scalar>> for Normal3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> DotProduct<Vector3<S>> for Normal3<S> {
+    type Output = S;
 
     /// Computes and returns the dot product between this normal and a vector.
     #[inline]
-    fn dot(self, v: Vector3<Scalar>) -> Scalar {
+    fn dot(self, v: Vector3<S>) -> S {
         self.x * v.x + self.y * v.y + self.z * v.z
     }
 }
 
-impl<Scalar: Float> Index<Dimension3> for Normal3<Scalar> {
-    type Output = Scalar;
+impl<S: Scalar> Index<Dimension3> for Normal3<S> {
+    type Output = S;
 
     #[inline]
-    fn index(&self, dim: Dimension3) -> &Scalar {
+    fn index(&self, dim: Dimension3) -> &S {
         match dim {
             Dimension3::X => &self.x,
             Dimension3::Y => &self.y,
@@ -2211,9 +2218,9 @@ impl<Scalar: Float> Index<Dimension3> for Normal3<Scalar> {
     }
 }
 
-impl<Scalar: Float> IndexMut<Dimension3> for Normal3<Scalar> {
+impl<S: Scalar> IndexMut<Dimension3> for Normal3<S> {
     #[inline]
-    fn index_mut(&mut self, dim: Dimension3) -> &mut Scalar {
+    fn index_mut(&mut self, dim: Dimension3) -> &mut S {
         match dim {
             Dimension3::X => &mut self.x,
             Dimension3::Y => &mut self.y,
@@ -2222,56 +2229,56 @@ impl<Scalar: Float> IndexMut<Dimension3> for Normal3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Add<Normal3<Scalar>> for Normal3<Scalar> {
-    type Output = Normal3<Scalar>;
+impl<S: Scalar> Add<Normal3<S>> for Normal3<S> {
+    type Output = Normal3<S>;
 
     #[inline]
-    fn add(self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn add(self, n: Normal3<S>) -> Normal3<S> {
         Normal3::new(self.x + n.x, self.y + n.y, self.z + n.z)
     }
 }
 
-impl<Scalar: Float + AddAssign> AddAssign<Normal3<Scalar>> for Normal3<Scalar> {
+impl<S: Scalar> AddAssign<Normal3<S>> for Normal3<S> {
     #[inline]
-    fn add_assign(&mut self, n: Normal3<Scalar>) {
+    fn add_assign(&mut self, n: Normal3<S>) {
         self.x += n.x;
         self.y += n.y;
         self.z += n.z;
     }
 }
 
-impl<Scalar: Float> Sub<Normal3<Scalar>> for Normal3<Scalar> {
-    type Output = Normal3<Scalar>;
+impl<S: Scalar> Sub<Normal3<S>> for Normal3<S> {
+    type Output = Normal3<S>;
 
     #[inline]
-    fn sub(self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn sub(self, n: Normal3<S>) -> Normal3<S> {
         Normal3::new(self.x - n.x, self.y - n.y, self.z - n.z)
     }
 }
 
-impl<Scalar: Float + SubAssign> SubAssign<Normal3<Scalar>> for Normal3<Scalar> {
+impl<S: Scalar> SubAssign<Normal3<S>> for Normal3<S> {
     #[inline]
-    fn sub_assign(&mut self, n: Normal3<Scalar>) {
+    fn sub_assign(&mut self, n: Normal3<S>) {
         self.x -= n.x;
         self.y -= n.y;
         self.z -= n.z;
     }
 }
 
-impl<Scalar: Float> Neg for Normal3<Scalar> {
-    type Output = Normal3<Scalar>;
+impl<S: Scalar> Neg for Normal3<S> {
+    type Output = Normal3<S>;
 
     #[inline]
-    fn neg(self) -> Normal3<Scalar> {
+    fn neg(self) -> Normal3<S> {
         Normal3::new(-self.x, -self.y, -self.z)
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for Normal3<Scalar> {
-    type Output = Normal3<Scalar>;
+impl<S: Scalar> Mul<S> for Normal3<S> {
+    type Output = Normal3<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Normal3<Scalar> {
+    fn mul(self, s: S) -> Normal3<S> {
         Normal3::new(self.x * s, self.y * s, self.z * s)
     }
 }
@@ -2294,128 +2301,128 @@ impl Mul<Normal3d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for Normal3<Scalar> {
+impl<S: Scalar> MulAssign<S> for Normal3<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         self.x *= s;
         self.y *= s;
         self.z *= s;
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for Normal3<Scalar> {
-    type Output = Normal3<Scalar>;
+impl<S: Scalar> Div<S> for Normal3<S> {
+    type Output = Normal3<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Normal3<Scalar> {
+    fn div(self, s: S) -> Normal3<S> {
         Normal3::new(self.x / s, self.y / s, self.z / s)
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for Normal3<Scalar> {
+impl<S: Scalar> DivAssign<S> for Normal3<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         self.x /= s;
         self.y /= s;
         self.z /= s;
     }
 }
 
-impl<Scalar: Float> Transform<Normal3<Scalar>> for Transform3<Scalar> {
-    type Output = Normal3<Scalar>;
+impl<S: Scalar> Transform<Normal3<S>> for Transform3<S> {
+    type Output = Normal3<S>;
 
     /// Transforms a normal.
     ///
     /// Note that transforming a normal is different from transforming a vector; normals are transformed by applying the transpose of the inverse
     /// transformation matrix. This difference is the main reason why there is a separate type for normals, which should be used instead of `Vector3`.
     #[inline]
-    fn transform(&self, n: Normal3<Scalar>) -> Normal3<Scalar> {
+    fn transform(&self, n: Normal3<S>) -> Normal3<S> {
         // Normals are transformed by the transpose of the inverse
         Normal3::from(Vector3::from(n) * &*self.inverse)
     }
 }
 
-impl<Scalar: Float> From<Vector3<Scalar>> for Normal3<Scalar> {
+impl<S: Scalar> From<Vector3<S>> for Normal3<S> {
     #[inline]
-    fn from(v: Vector3<Scalar>) -> Self {
+    fn from(v: Vector3<S>) -> Self {
         Normal3::new(v.x, v.y, v.z)
     }
 }
 
 // ===== Ray3 ==================================================================================================================================================
 
-impl<Scalar: Float> Ray3<Scalar> {
+impl<S: Scalar> Ray3<S> {
     /// Creates and returns a new `Ray3` with an origin point and direction vector.
     #[inline]
-    pub fn new(origin: Point3<Scalar>, direction: Vector3<Scalar>) -> Ray3<Scalar> {
+    pub fn new(origin: Point3<S>, direction: Vector3<S>) -> Ray3<S> {
         Ray3 { origin, direction }
     }
 
     /// Computes and returns a point at a distance along this ray.
     #[inline]
-    pub fn at(&self, distance: Scalar) -> Point3<Scalar> {
+    pub fn at(&self, distance: S) -> Point3<S> {
         self.origin + self.direction * distance
     }
 }
 
-impl<Scalar: Float> Transform<&Ray3<Scalar>> for Transform3<Scalar> {
-    type Output = Ray3<Scalar>;
+impl<S: Scalar> Transform<&Ray3<S>> for Transform3<S> {
+    type Output = Ray3<S>;
 
     /// Transforms a ray.
     #[inline]
-    fn transform(&self, ray: &Ray3<Scalar>) -> Ray3<Scalar> {
+    fn transform(&self, ray: &Ray3<S>) -> Ray3<S> {
         Ray3::new(self.transform(ray.origin), self.transform(ray.direction))
     }
 }
 
 // ===== BoundingBox3 ==========================================================================================================================================
 
-impl<Scalar: Float + FloatConstExt> BoundingBox3<Scalar> {
+impl<S: Scalar> BoundingBox3<S> {
     /// Creates and returns a new `BoundingBox3` with minimum and maximum corner points.
     #[inline]
-    pub fn new(min: Point3<Scalar>, max: Point3<Scalar>) -> BoundingBox3<Scalar> {
+    pub fn new(min: Point3<S>, max: Point3<S>) -> BoundingBox3<S> {
         BoundingBox3 { min, max }
     }
 
     /// Returns an empty `BoundingBox3`.
     #[inline]
-    pub fn empty() -> BoundingBox3<Scalar> {
+    pub fn empty() -> BoundingBox3<S> {
         BoundingBox3::new(
-            Point3::new(Scalar::infinity(), Scalar::infinity(), Scalar::infinity()),
-            Point3::new(Scalar::neg_infinity(), Scalar::neg_infinity(), Scalar::neg_infinity()),
+            Point3::new(S::infinity(), S::infinity(), S::infinity()),
+            Point3::new(S::neg_infinity(), S::neg_infinity(), S::neg_infinity()),
         )
     }
 
     /// Returns an infinite `BoundingBox3` which contains all of 3D space.
     #[inline]
-    pub fn infinite() -> BoundingBox3<Scalar> {
+    pub fn infinite() -> BoundingBox3<S> {
         BoundingBox3::new(
-            Point3::new(Scalar::neg_infinity(), Scalar::neg_infinity(), Scalar::neg_infinity()),
-            Point3::new(Scalar::infinity(), Scalar::infinity(), Scalar::infinity()),
+            Point3::new(S::neg_infinity(), S::neg_infinity(), S::neg_infinity()),
+            Point3::new(S::infinity(), S::infinity(), S::infinity()),
         )
     }
 
     /// Returns the width (extent in the X dimension) of this bounding box.
     #[inline]
-    pub fn width(&self) -> Scalar {
+    pub fn width(&self) -> S {
         self.max.x - self.min.x
     }
 
     /// Returns the height (extent in the Y dimension) of this bounding box.
     #[inline]
-    pub fn height(&self) -> Scalar {
+    pub fn height(&self) -> S {
         self.max.y - self.min.y
     }
 
     /// Returns the depth (extent in the Z dimension) of this bounding box.
     #[inline]
-    pub fn depth(&self) -> Scalar {
+    pub fn depth(&self) -> S {
         self.max.z - self.min.z
     }
 
     /// Returns the extent of this bounding box in a dimension.
     #[inline]
-    pub fn extent(&self, dim: Dimension3) -> Scalar {
+    pub fn extent(&self, dim: Dimension3) -> S {
         match dim {
             Dimension3::X => self.width(),
             Dimension3::Y => self.height(),
@@ -2439,27 +2446,27 @@ impl<Scalar: Float + FloatConstExt> BoundingBox3<Scalar> {
 
     /// Returns the surface area of this bounding box.
     #[inline]
-    pub fn surface_area(&self) -> Scalar {
+    pub fn surface_area(&self) -> S {
         let d = self.diagonal();
-        Scalar::two() * (d.x * d.y + d.x * d.z + d.y * d.z)
+        S::two() * (d.x * d.y + d.x * d.z + d.y * d.z)
     }
 
     /// Returns the volume (width times height times depth) of this bounding box.
     #[inline]
-    pub fn volume(&self) -> Scalar {
+    pub fn volume(&self) -> S {
         let d = self.diagonal();
         d.x * d.y * d.z
     }
 
     /// Returns the center point of this bounding box.
     #[inline]
-    pub fn center(&self) -> Point3<Scalar> {
-        self.min + self.diagonal() * Scalar::half()
+    pub fn center(&self) -> Point3<S> {
+        self.min + self.diagonal() * S::half()
     }
 
     /// Returns a corner point of this bounding box, indicated by an index (which must be between 0 and 7 inclusive).
     #[inline]
-    pub fn corner(&self, index: usize) -> Point3<Scalar> {
+    pub fn corner(&self, index: usize) -> Point3<S> {
         debug_assert!(index < 8, "Invalid corner index: {}", index);
         let x = if index & 0b001 == 0 { self.min.x } else { self.max.x };
         let y = if index & 0b010 == 0 { self.min.y } else { self.max.y };
@@ -2469,13 +2476,13 @@ impl<Scalar: Float + FloatConstExt> BoundingBox3<Scalar> {
 
     /// Returns the diagonal of this bounding box as a vector.
     #[inline]
-    pub fn diagonal(&self) -> Vector3<Scalar> {
+    pub fn diagonal(&self) -> Vector3<S> {
         self.max - self.min
     }
 
     /// Checks if two bounding boxes overlap.
     #[inline]
-    pub fn overlaps(&self, bb: &BoundingBox3<Scalar>) -> bool {
+    pub fn overlaps(&self, bb: &BoundingBox3<S>) -> bool {
         //@formatter:off
         self.max.x >= bb.min.x && self.min.x <= bb.max.x &&
         self.max.y >= bb.min.y && self.min.y <= bb.max.y &&
@@ -2485,7 +2492,7 @@ impl<Scalar: Float + FloatConstExt> BoundingBox3<Scalar> {
 
     /// Checks if a point is inside this bounding box.
     #[inline]
-    pub fn is_inside(&self, p: Point3<Scalar>) -> bool {
+    pub fn is_inside(&self, p: Point3<S>) -> bool {
         //@formatter:off
         p.x >= self.min.x && p.x <= self.max.x &&
         p.y >= self.min.y && p.y <= self.max.y &&
@@ -2496,7 +2503,7 @@ impl<Scalar: Float + FloatConstExt> BoundingBox3<Scalar> {
     /// Computes the closest intersection of this bounding box with a ray within a range.
     ///
     /// Returns a `Some` containing the closest intersection, or `None` if the ray does not intersect the bounding box within the range.
-    pub fn intersect_ray(&self, ray: &Ray3<Scalar>, range: &Range<Scalar>) -> Option<Scalar> {
+    pub fn intersect_ray(&self, ray: &Ray3<S>, range: &Range<S>) -> Option<S> {
         let (start, end) = (range.start, range.end);
 
         let d1 = (self.min.x - ray.origin.x) / ray.direction.x;
@@ -2533,32 +2540,32 @@ impl<Scalar: Float + FloatConstExt> BoundingBox3<Scalar> {
     }
 }
 
-impl<Scalar: Float + FloatConstExt> Union<&BoundingBox3<Scalar>> for BoundingBox3<Scalar> {
-    type Output = BoundingBox3<Scalar>;
+impl<S: Scalar> Union<&BoundingBox3<S>> for BoundingBox3<S> {
+    type Output = BoundingBox3<S>;
 
     /// Computes and returns the union between two bounding boxes.
     ///
     /// The union is the smallest bounding box that contains both bounding boxes.
     #[inline]
-    fn union(self, bb: &BoundingBox3<Scalar>) -> BoundingBox3<Scalar> {
+    fn union(self, bb: &BoundingBox3<S>) -> BoundingBox3<S> {
         BoundingBox3::new(min(self.min, bb.min), max(self.max, bb.max))
     }
 }
 
-impl<Scalar: Float + FloatConstExt> Union<Point3<Scalar>> for BoundingBox3<Scalar> {
-    type Output = BoundingBox3<Scalar>;
+impl<S: Scalar> Union<Point3<S>> for BoundingBox3<S> {
+    type Output = BoundingBox3<S>;
 
     /// Computes and returns the union between this bounding box and a point.
     ///
     /// The union is the smallest bounding box that contains both the bounding box and the point.
     #[inline]
-    fn union(self, p: Point3<Scalar>) -> BoundingBox3<Scalar> {
+    fn union(self, p: Point3<S>) -> BoundingBox3<S> {
         BoundingBox3::new(min(self.min, p), max(self.max, p))
     }
 }
 
-impl<Scalar: Float + FloatConstExt> Intersection<&BoundingBox3<Scalar>> for BoundingBox3<Scalar> {
-    type Output = BoundingBox3<Scalar>;
+impl<S: Scalar> Intersection<&BoundingBox3<S>> for BoundingBox3<S> {
+    type Output = BoundingBox3<S>;
 
     /// Computes and returns the intersection between two bounding boxes.
     ///
@@ -2566,7 +2573,7 @@ impl<Scalar: Float + FloatConstExt> Intersection<&BoundingBox3<Scalar>> for Boun
     ///
     /// Returns `Some` when the bounding boxes overlap; `None` if the bounding boxes do not overlap.
     #[inline]
-    fn intersection(self, bb: &BoundingBox3<Scalar>) -> Option<BoundingBox3<Scalar>> {
+    fn intersection(self, bb: &BoundingBox3<S>) -> Option<BoundingBox3<S>> {
         if self.overlaps(bb) {
             Some(BoundingBox3::new(max(self.min, bb.min), min(self.max, bb.max)))
         } else {
@@ -2575,11 +2582,11 @@ impl<Scalar: Float + FloatConstExt> Intersection<&BoundingBox3<Scalar>> for Boun
     }
 }
 
-impl<Scalar: Float + FloatConstExt + AddAssign> Transform<&BoundingBox3<Scalar>> for Transform3<Scalar> {
-    type Output = BoundingBox3<Scalar>;
+impl<S: Scalar> Transform<&BoundingBox3<S>> for Transform3<S> {
+    type Output = BoundingBox3<S>;
 
     /// Transforms a bounding box.
-    fn transform(&self, bb: &BoundingBox3<Scalar>) -> BoundingBox3<Scalar> {
+    fn transform(&self, bb: &BoundingBox3<S>) -> BoundingBox3<S> {
         let o = self.transform(bb.min);
         let d = self.transform(bb.diagonal());
 
@@ -2600,17 +2607,17 @@ impl<Scalar: Float + FloatConstExt + AddAssign> Transform<&BoundingBox3<Scalar>>
 
 // ===== Matrix4x4 =============================================================================================================================================
 
-impl<Scalar: Float> Matrix4x4<Scalar> {
+impl<S: Scalar> Matrix4x4<S> {
     /// Creates and returns a new `Matrix4x4` with the specified elements.
     #[inline]
-    pub fn new(m: [Scalar; 16]) -> Matrix4x4<Scalar> {
+    pub fn new(m: [S; 16]) -> Matrix4x4<S> {
         Matrix4x4 { m }
     }
 
     /// Returns a `Matrix4x4` which represents the identity matrix.
     #[inline]
-    pub fn identity() -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn identity() -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix4x4::new([
             i, o, o, o,
@@ -2622,8 +2629,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a translation matrix which translates over a vector.
     #[inline]
-    pub fn translate(v: Vector3<Scalar>) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn translate(v: Vector3<S>) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix4x4::new([
             i, o, o, v.x,
@@ -2635,8 +2642,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a rotation matrix which rotates around the X axis.
     #[inline]
-    pub fn rotate_x(angle: Scalar) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn rotate_x(angle: S) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
         let (sin, cos) = angle.sin_cos();
 
         Matrix4x4::new([
@@ -2649,8 +2656,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a rotation matrix which rotates around the Y axis.
     #[inline]
-    pub fn rotate_y(angle: Scalar) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn rotate_y(angle: S) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
         let (sin, cos) = angle.sin_cos();
 
         Matrix4x4::new([
@@ -2663,8 +2670,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a rotation matrix which rotates around the Y axis.
     #[inline]
-    pub fn rotate_z(angle: Scalar) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn rotate_z(angle: S) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
         let (sin, cos) = angle.sin_cos();
 
         Matrix4x4::new([
@@ -2677,12 +2684,12 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a rotation matrix which rotates around an axis.
     #[inline]
-    pub fn rotate_axis(axis: Vector3<Scalar>, angle: Scalar) -> Matrix4x4<Scalar> {
+    pub fn rotate_axis(axis: Vector3<S>, angle: S) -> Matrix4x4<S> {
         let a = axis.normalize();
 
-        let (o, i) = (Scalar::zero(), Scalar::one());
+        let (o, i) = (S::zero(), S::one());
         let (s, c) = angle.sin_cos();
-        let cc = Scalar::one() - c;
+        let cc = S::one() - c;
 
         let (t1, t2, t3) = (a.x * a.y * cc, a.x * a.z * cc, a.y * a.z * cc);
         let (u1, u2, u3) = (a.x * s, a.y * s, a.z * s);
@@ -2697,8 +2704,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a matrix which scales by factors in the X, Y and Z dimensions.
     #[inline]
-    pub fn scale(sx: Scalar, sy: Scalar, sz: Scalar) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn scale(sx: S, sy: S, sz: S) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix4x4::new([
             sx, o, o, o,
@@ -2710,8 +2717,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a matrix which scales uniformly in all dimensions by a factor.
     #[inline]
-    pub fn scale_uniform(s: Scalar) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn scale_uniform(s: S) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
 
         Matrix4x4::new([
             s, o, o, o,
@@ -2723,8 +2730,8 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns the inverse of a look-at transformation matrix which looks from a point at a target, with an 'up' direction.
     #[inline]
-    pub fn inverse_look_at(from: Point3<Scalar>, target: Point3<Scalar>, up: Vector3<Scalar>) -> Matrix4x4<Scalar> {
-        let (o, i) = (Scalar::zero(), Scalar::one());
+    pub fn inverse_look_at(from: Point3<S>, target: Point3<S>, up: Vector3<S>) -> Matrix4x4<S> {
+        let (o, i) = (S::zero(), S::one());
         let direction = (target - from).normalize();
         let right = up.normalize().cross(direction).normalize();
         let new_up = direction.cross(right);
@@ -2739,7 +2746,7 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns an element at a row and column of the matrix.
     #[inline]
-    pub fn get(&self, row: usize, col: usize) -> Scalar {
+    pub fn get(&self, row: usize, col: usize) -> S {
         debug_assert!(row < 4, "Invalid row index: {}", row);
         debug_assert!(col < 4, "Invalid column index: {}", row);
         self.m[row * 4 + col]
@@ -2747,7 +2754,7 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns a mutable reference to an element at a row and column of the matrix.
     #[inline]
-    pub fn get_mut(&mut self, row: usize, col: usize) -> &mut Scalar {
+    pub fn get_mut(&mut self, row: usize, col: usize) -> &mut S {
         debug_assert!(row < 4, "Invalid row index: {}", row);
         debug_assert!(col < 4, "Invalid column index: {}", row);
         &mut self.m[row * 4 + col]
@@ -2755,7 +2762,7 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Sets the value of an element at a row and column of the matrix.
     #[inline]
-    pub fn set(&mut self, row: usize, col: usize, value: Scalar) {
+    pub fn set(&mut self, row: usize, col: usize, value: S) {
         debug_assert!(row < 4, "Invalid row index: {}", row);
         debug_assert!(col < 4, "Invalid column index: {}", row);
         self.m[row * 4 + col] = value;
@@ -2763,7 +2770,7 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
     /// Returns the transpose of this matrix.
     #[inline]
-    pub fn transpose(&self) -> Matrix4x4<Scalar> {
+    pub fn transpose(&self) -> Matrix4x4<S> {
         Matrix4x4::new([
             self.m[0], self.m[4], self.m[8], self.m[12],
             self.m[1], self.m[5], self.m[9], self.m[13],
@@ -2775,11 +2782,11 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
     /// Computes and returns the inverse of this matrix.
     ///
     /// If this matrix is singular, a `NonInvertibleMatrixError` is returned.
-    pub fn inverse(&self) -> Result<Matrix4x4<Scalar>, NonInvertibleMatrixError> {
+    pub fn inverse(&self) -> Result<Matrix4x4<S>, NonInvertibleMatrixError> {
         let cofactor = |i, j| {
             let sub = |row, col| self.get(if row < i { row } else { row + 1 }, if col < j { col } else { col + 1 });
 
-            let sign = if (i + j) % 2 == 0 { Scalar::one() } else { -Scalar::one() };
+            let sign = if (i + j) % 2 == 0 { S::one() } else { -S::one() };
 
             sign * (sub(0, 0) * sub(1, 1) * sub(2, 2) + sub(0, 1) * sub(1, 2) * sub(2, 0) + sub(0, 2) * sub(1, 0) * sub(2, 1)
                 - sub(0, 0) * sub(1, 2) * sub(2, 1) - sub(0, 1) * sub(1, 0) * sub(2, 2) - sub(0, 2) * sub(1, 1) * sub(2, 0))
@@ -2794,7 +2801,7 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
 
         let det = self.m[0] * adjugate.m[0] + self.m[1] * adjugate.m[4] + self.m[2] * adjugate.m[8] + self.m[3] * adjugate.m[12];
 
-        if det != Scalar::zero() {
+        if det != S::zero() {
             Ok(&adjugate * det.recip())
         } else {
             Err(NonInvertibleMatrixError)
@@ -2802,11 +2809,11 @@ impl<Scalar: Float> Matrix4x4<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<Scalar> for &Matrix4x4<Scalar> {
-    type Output = Matrix4x4<Scalar>;
+impl<S: Scalar> Mul<S> for &Matrix4x4<S> {
+    type Output = Matrix4x4<S>;
 
     #[inline]
-    fn mul(self, s: Scalar) -> Matrix4x4<Scalar> {
+    fn mul(self, s: S) -> Matrix4x4<S> {
         Matrix4x4::new(array![i => self.m[i] * s; 16])
     }
 }
@@ -2827,34 +2834,34 @@ impl Mul<&Matrix4x4d> for f64 {
     }
 }
 
-impl<Scalar: Float + MulAssign> MulAssign<Scalar> for &mut Matrix4x4<Scalar> {
+impl<S: Scalar> MulAssign<S> for &mut Matrix4x4<S> {
     #[inline]
-    fn mul_assign(&mut self, s: Scalar) {
+    fn mul_assign(&mut self, s: S) {
         for m in &mut self.m { *m *= s; }
     }
 }
 
-impl<Scalar: Float> Div<Scalar> for &Matrix4x4<Scalar> {
-    type Output = Matrix4x4<Scalar>;
+impl<S: Scalar> Div<S> for &Matrix4x4<S> {
+    type Output = Matrix4x4<S>;
 
     #[inline]
-    fn div(self, s: Scalar) -> Matrix4x4<Scalar> {
+    fn div(self, s: S) -> Matrix4x4<S> {
         Matrix4x4::new(array![i => self.m[i] / s; 16])
     }
 }
 
-impl<Scalar: Float + DivAssign> DivAssign<Scalar> for &mut Matrix4x4<Scalar> {
+impl<S: Scalar> DivAssign<S> for &mut Matrix4x4<S> {
     #[inline]
-    fn div_assign(&mut self, s: Scalar) {
+    fn div_assign(&mut self, s: S) {
         for m in &mut self.m { *m /= s; }
     }
 }
 
-impl<Scalar: Float> Mul<Point3<Scalar>> for &Matrix4x4<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Mul<Point3<S>> for &Matrix4x4<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn mul(self, p: Point3<Scalar>) -> Point3<Scalar> {
+    fn mul(self, p: Point3<S>) -> Point3<S> {
         let x = self.m[0] * p.x + self.m[1] * p.y + self.m[2] * p.z + self.m[3];
         let y = self.m[4] * p.x + self.m[5] * p.y + self.m[6] * p.z + self.m[7];
         let z = self.m[8] * p.x + self.m[9] * p.y + self.m[10] * p.z + self.m[11];
@@ -2863,11 +2870,11 @@ impl<Scalar: Float> Mul<Point3<Scalar>> for &Matrix4x4<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<&Matrix4x4<Scalar>> for Point3<Scalar> {
-    type Output = Point3<Scalar>;
+impl<S: Scalar> Mul<&Matrix4x4<S>> for Point3<S> {
+    type Output = Point3<S>;
 
     #[inline]
-    fn mul(self, m: &Matrix4x4<Scalar>) -> Point3<Scalar> {
+    fn mul(self, m: &Matrix4x4<S>) -> Point3<S> {
         let x = self.x * m.m[0] + self.y * m.m[4] + self.z * m.m[8] + m.m[12];
         let y = self.x * m.m[1] + self.y * m.m[5] + self.z * m.m[9] + m.m[13];
         let z = self.x * m.m[2] + self.y * m.m[6] + self.z * m.m[10] + m.m[14];
@@ -2876,11 +2883,11 @@ impl<Scalar: Float> Mul<&Matrix4x4<Scalar>> for Point3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<Vector3<Scalar>> for &Matrix4x4<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Mul<Vector3<S>> for &Matrix4x4<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn mul(self, v: Vector3<Scalar>) -> Vector3<Scalar> {
+    fn mul(self, v: Vector3<S>) -> Vector3<S> {
         let x = self.m[0] * v.x + self.m[1] * v.y + self.m[2] * v.z;
         let y = self.m[4] * v.x + self.m[5] * v.y + self.m[6] * v.z;
         let z = self.m[8] * v.x + self.m[9] * v.y + self.m[10] * v.z;
@@ -2888,11 +2895,11 @@ impl<Scalar: Float> Mul<Vector3<Scalar>> for &Matrix4x4<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<&Matrix4x4<Scalar>> for Vector3<Scalar> {
-    type Output = Vector3<Scalar>;
+impl<S: Scalar> Mul<&Matrix4x4<S>> for Vector3<S> {
+    type Output = Vector3<S>;
 
     #[inline]
-    fn mul(self, m: &Matrix4x4<Scalar>) -> Vector3<Scalar> {
+    fn mul(self, m: &Matrix4x4<S>) -> Vector3<S> {
         let x = self.x * m.m[0] + self.y * m.m[4] + self.z * m.m[8];
         let y = self.x * m.m[1] + self.y * m.m[5] + self.z * m.m[9];
         let z = self.x * m.m[2] + self.y * m.m[6] + self.z * m.m[10];
@@ -2900,11 +2907,11 @@ impl<Scalar: Float> Mul<&Matrix4x4<Scalar>> for Vector3<Scalar> {
     }
 }
 
-impl<Scalar: Float> Mul<&Matrix4x4<Scalar>> for &Matrix4x4<Scalar> {
-    type Output = Matrix4x4<Scalar>;
+impl<S: Scalar> Mul<&Matrix4x4<S>> for &Matrix4x4<S> {
+    type Output = Matrix4x4<S>;
 
     #[inline]
-    fn mul(self, m: &Matrix4x4<Scalar>) -> Matrix4x4<Scalar> {
+    fn mul(self, m: &Matrix4x4<S>) -> Matrix4x4<S> {
         Matrix4x4::new([
             self.m[0] * m.m[0] + self.m[1] * m.m[4] + self.m[2] * m.m[8] + self.m[3] * m.m[12],
             self.m[0] * m.m[1] + self.m[1] * m.m[5] + self.m[2] * m.m[9] + self.m[3] * m.m[13],
@@ -2928,16 +2935,16 @@ impl<Scalar: Float> Mul<&Matrix4x4<Scalar>> for &Matrix4x4<Scalar> {
 
 // ===== Transform3 ============================================================================================================================================
 
-impl<Scalar: Float> Transform3<Scalar> {
+impl<S: Scalar> Transform3<S> {
     /// Creates and returns a new `Transform3` with a transformation matrix and its inverse.
     #[inline]
-    pub fn new(forward: Arc<Matrix4x4<Scalar>>, inverse: Arc<Matrix4x4<Scalar>>) -> Transform3<Scalar> {
+    pub fn new(forward: Arc<Matrix4x4<S>>, inverse: Arc<Matrix4x4<S>>) -> Transform3<S> {
         Transform3 { forward, inverse }
     }
 
     /// Returns a `Transform3` which represents the identity transform.
     #[inline]
-    pub fn identity() -> Transform3<Scalar> {
+    pub fn identity() -> Transform3<S> {
         let forward = Arc::new(Matrix4x4::identity());
         let inverse = forward.clone();
         Transform3::new(forward, inverse)
@@ -2945,13 +2952,13 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Returns a translation transform over a vector.
     #[inline]
-    pub fn translate(v: Vector3<Scalar>) -> Transform3<Scalar> {
+    pub fn translate(v: Vector3<S>) -> Transform3<S> {
         Transform3::new(Arc::new(Matrix4x4::translate(v)), Arc::new(Matrix4x4::translate(-v)))
     }
 
     /// Returns a rotation transform which rotates around the X axis.
     #[inline]
-    pub fn rotate_x(angle: Scalar) -> Transform3<Scalar> {
+    pub fn rotate_x(angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_x(angle);
         let inverse = forward.transpose();
         Transform3::new(Arc::new(forward), Arc::new(inverse))
@@ -2959,7 +2966,7 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Returns a rotation transform which rotates around the Y axis.
     #[inline]
-    pub fn rotate_y(angle: Scalar) -> Transform3<Scalar> {
+    pub fn rotate_y(angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_y(angle);
         let inverse = forward.transpose();
         Transform3::new(Arc::new(forward), Arc::new(inverse))
@@ -2967,7 +2974,7 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Returns a rotation transform which rotates around the Z axis.
     #[inline]
-    pub fn rotate_z(angle: Scalar) -> Transform3<Scalar> {
+    pub fn rotate_z(angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_z(angle);
         let inverse = forward.transpose();
         Transform3::new(Arc::new(forward), Arc::new(inverse))
@@ -2975,7 +2982,7 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Returns a rotation transform which rotates around an axis.
     #[inline]
-    pub fn rotate_axis(axis: Vector3<Scalar>, angle: Scalar) -> Transform3<Scalar> {
+    pub fn rotate_axis(axis: Vector3<S>, angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_axis(axis, angle);
         let inverse = forward.transpose();
         Transform3::new(Arc::new(forward), Arc::new(inverse))
@@ -2983,13 +2990,13 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Returns a transform which scales by factors in the X, Y and Z dimensions.
     #[inline]
-    pub fn scale(sx: Scalar, sy: Scalar, sz: Scalar) -> Transform3<Scalar> {
+    pub fn scale(sx: S, sy: S, sz: S) -> Transform3<S> {
         Transform3::new(Arc::new(Matrix4x4::scale(sx, sy, sz)), Arc::new(Matrix4x4::scale(sx.recip(), sy.recip(), sz.recip())))
     }
 
     /// Returns a transform which scales uniformly in all dimensions by a factor.
     #[inline]
-    pub fn scale_uniform(s: Scalar) -> Transform3<Scalar> {
+    pub fn scale_uniform(s: S) -> Transform3<S> {
         Transform3::new(Arc::new(Matrix4x4::scale_uniform(s)), Arc::new(Matrix4x4::scale_uniform(s.recip())))
     }
 
@@ -2997,7 +3004,7 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Returns a look-at transform which looks from a point at a target, with an 'up' direction.
     #[inline]
-    pub fn look_at(from: Point3<Scalar>, target: Point3<Scalar>, up: Vector3<Scalar>) -> Result<Transform3<Scalar>, NonInvertibleMatrixError> {
+    pub fn look_at(from: Point3<S>, target: Point3<S>, up: Vector3<S>) -> Result<Transform3<S>, NonInvertibleMatrixError> {
         let inverse = Matrix4x4::inverse_look_at(from, target, up);
         let forward = inverse.inverse()?;
         Ok(Transform3::new(Arc::new(forward), Arc::new(inverse)))
@@ -3005,22 +3012,22 @@ impl<Scalar: Float> Transform3<Scalar> {
 
     /// Computes and returns a composite transform, which first applies this and then the other transform.
     #[inline]
-    pub fn and_then(&self, transform: &Transform3<Scalar>) -> Transform3<Scalar> {
+    pub fn and_then(&self, transform: &Transform3<S>) -> Transform3<S> {
         Transform3::new(Arc::new(&*transform.forward * &*self.forward), Arc::new(&*self.inverse * &*transform.inverse))
     }
 
     /// Returns the inverse of this transform.
     #[inline]
-    pub fn inverse(&self) -> Transform3<Scalar> {
+    pub fn inverse(&self) -> Transform3<S> {
         Transform3::new(self.inverse.clone(), self.forward.clone())
     }
 }
 
-impl<Scalar: Float> TryFrom<Matrix4x4<Scalar>> for Transform3<Scalar> {
+impl<S: Scalar> TryFrom<Matrix4x4<S>> for Transform3<S> {
     type Error = NonInvertibleMatrixError;
 
     #[inline]
-    fn try_from(forward: Matrix4x4<Scalar>) -> Result<Transform3<Scalar>, NonInvertibleMatrixError> {
+    fn try_from(forward: Matrix4x4<S>) -> Result<Transform3<S>, NonInvertibleMatrixError> {
         let inverse = forward.inverse()?;
         Ok(Transform3::new(Arc::new(forward), Arc::new(inverse)))
     }
