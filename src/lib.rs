@@ -15,7 +15,6 @@
 use std::array;
 use std::convert::TryFrom;
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign};
-use std::sync::Arc;
 
 use num_traits::{Float, NumAssign};
 
@@ -225,8 +224,8 @@ pub struct Matrix3x3<S: Scalar> {
 /// Transform for transformations in 2D space.
 #[derive(Clone, PartialEq, Debug)]
 pub struct Transform2<S: Scalar> {
-    pub forward: Arc<Matrix3x3<S>>,
-    pub inverse: Arc<Matrix3x3<S>>,
+    pub forward: Matrix3x3<S>,
+    pub inverse: Matrix3x3<S>,
 }
 
 /// Dimension in 3D space.
@@ -280,8 +279,8 @@ pub struct Matrix4x4<S: Scalar> {
 /// Transform for transformations in 3D space.
 #[derive(Clone, PartialEq, Debug)]
 pub struct Transform3<S: Scalar> {
-    pub forward: Arc<Matrix4x4<S>>,
-    pub inverse: Arc<Matrix4x4<S>>,
+    pub forward: Matrix4x4<S>,
+    pub inverse: Matrix4x4<S>,
 }
 
 pub type Point2f = Point2<f32>;
@@ -607,7 +606,7 @@ impl<S: Scalar> Transform<Point2<S>> for Transform2<S> {
     /// Transforms a point.
     #[inline]
     fn transform(&self, p: Point2<S>) -> Point2<S> {
-        &*self.forward * p
+        &self.forward * p
     }
 }
 
@@ -894,7 +893,7 @@ impl<S: Scalar> Transform<Vector2<S>> for Transform2<S> {
     /// Transforms a vector.
     #[inline]
     fn transform(&self, v: Vector2<S>) -> Vector2<S> {
-        &*self.forward * v
+        &self.forward * v
     }
 }
 
@@ -1379,14 +1378,14 @@ impl<S: Scalar> Mul<&Matrix3x3<S>> for &Matrix3x3<S> {
 impl<S: Scalar> Transform2<S> {
     /// Creates and returns a new `Transform2` with a transformation matrix and its inverse.
     #[inline]
-    pub fn new(forward: Arc<Matrix3x3<S>>, inverse: Arc<Matrix3x3<S>>) -> Transform2<S> {
+    pub fn new(forward: Matrix3x3<S>, inverse: Matrix3x3<S>) -> Transform2<S> {
         Transform2 { forward, inverse }
     }
 
     /// Returns a `Transform2` which represents the identity transform.
     #[inline]
     pub fn identity() -> Transform2<S> {
-        let forward = Arc::new(Matrix3x3::identity());
+        let forward = Matrix3x3::identity();
         let inverse = forward.clone();
         Transform2::new(forward, inverse)
     }
@@ -1394,7 +1393,9 @@ impl<S: Scalar> Transform2<S> {
     /// Returns a translation transform over a vector.
     #[inline]
     pub fn translate(v: Vector2<S>) -> Transform2<S> {
-        Transform2::new(Arc::new(Matrix3x3::translate(v)), Arc::new(Matrix3x3::translate(-v)))
+        let forward = Matrix3x3::translate(v);
+        let inverse = Matrix3x3::translate(-v);
+        Transform2::new(forward, inverse)
     }
 
     /// Returns a rotation transform which rotates around the origin.
@@ -1402,31 +1403,39 @@ impl<S: Scalar> Transform2<S> {
     pub fn rotate(angle: S) -> Transform2<S> {
         let forward = Matrix3x3::rotate(angle);
         let inverse = forward.transpose();
-        Transform2::new(Arc::new(forward), Arc::new(inverse))
+        Transform2::new(forward, inverse)
     }
 
     /// Returns a transform which scales by factors in the X and Y dimensions.
     #[inline]
     pub fn scale(sx: S, sy: S) -> Transform2<S> {
-        Transform2::new(Arc::new(Matrix3x3::scale(sx, sy)), Arc::new(Matrix3x3::scale(sx.recip(), sy.recip())))
+        let forward = Matrix3x3::scale(sx, sy);
+        let inverse = Matrix3x3::scale(sx.recip(), sy.recip());
+        Transform2::new(forward, inverse)
     }
 
     /// Returns a transform which scales uniformly in all dimensions by a factor.
     #[inline]
     pub fn scale_uniform(s: S) -> Transform2<S> {
-        Transform2::new(Arc::new(Matrix3x3::scale_uniform(s)), Arc::new(Matrix3x3::scale_uniform(s.recip())))
+        let forward = Matrix3x3::scale_uniform(s);
+        let inverse = Matrix3x3::scale_uniform(s.recip());
+        Transform2::new(forward, inverse)
     }
 
     /// Computes and returns a composite transform, which first applies this and then the other transform.
     #[inline]
     pub fn and_then(&self, transform: &Transform2<S>) -> Transform2<S> {
-        Transform2::new(Arc::new(&*transform.forward * &*self.forward), Arc::new(&*self.inverse * &*transform.inverse))
+        let forward = &transform.forward * &self.forward;
+        let inverse = &self.inverse * &transform.inverse;
+        Transform2::new(forward, inverse)
     }
 
     /// Returns the inverse of this transform.
     #[inline]
     pub fn inverse(&self) -> Transform2<S> {
-        Transform2::new(self.inverse.clone(), self.forward.clone())
+        let forward = self.inverse.clone();
+        let inverse = self.forward.clone();
+        Transform2::new(forward, inverse)
     }
 }
 
@@ -1436,7 +1445,7 @@ impl<S: Scalar> TryFrom<Matrix3x3<S>> for Transform2<S> {
     #[inline]
     fn try_from(forward: Matrix3x3<S>) -> Result<Transform2<S>, NonInvertibleMatrixError> {
         let inverse = forward.inverse()?;
-        Ok(Transform2::new(Arc::new(forward), Arc::new(inverse)))
+        Ok(Transform2::new(forward, inverse))
     }
 }
 
@@ -1696,7 +1705,7 @@ impl<S: Scalar> Transform<Point3<S>> for Transform3<S> {
     /// Transforms a point.
     #[inline]
     fn transform(&self, p: Point3<S>) -> Point3<S> {
-        &*self.forward * p
+        &self.forward * p
     }
 }
 
@@ -2016,7 +2025,7 @@ impl<S: Scalar> Transform<Vector3<S>> for Transform3<S> {
     /// Transforms a vector.
     #[inline]
     fn transform(&self, v: Vector3<S>) -> Vector3<S> {
-        &*self.forward * v
+        &self.forward * v
     }
 }
 
@@ -2337,7 +2346,7 @@ impl<S: Scalar> Transform<Normal3<S>> for Transform3<S> {
     #[inline]
     fn transform(&self, n: Normal3<S>) -> Normal3<S> {
         // Normals are transformed by the transpose of the inverse
-        Normal3::from(Vector3::from(n) * &*self.inverse)
+        Normal3::from(Vector3::from(n) * &self.inverse)
     }
 }
 
@@ -2937,14 +2946,14 @@ impl<S: Scalar> Mul<&Matrix4x4<S>> for &Matrix4x4<S> {
 impl<S: Scalar> Transform3<S> {
     /// Creates and returns a new `Transform3` with a transformation matrix and its inverse.
     #[inline]
-    pub fn new(forward: Arc<Matrix4x4<S>>, inverse: Arc<Matrix4x4<S>>) -> Transform3<S> {
+    pub fn new(forward: Matrix4x4<S>, inverse: Matrix4x4<S>) -> Transform3<S> {
         Transform3 { forward, inverse }
     }
 
     /// Returns a `Transform3` which represents the identity transform.
     #[inline]
     pub fn identity() -> Transform3<S> {
-        let forward = Arc::new(Matrix4x4::identity());
+        let forward = Matrix4x4::identity();
         let inverse = forward.clone();
         Transform3::new(forward, inverse)
     }
@@ -2952,7 +2961,9 @@ impl<S: Scalar> Transform3<S> {
     /// Returns a translation transform over a vector.
     #[inline]
     pub fn translate(v: Vector3<S>) -> Transform3<S> {
-        Transform3::new(Arc::new(Matrix4x4::translate(v)), Arc::new(Matrix4x4::translate(-v)))
+        let forward = Matrix4x4::translate(v);
+        let inverse = Matrix4x4::translate(-v);
+        Transform3::new(forward, inverse)
     }
 
     /// Returns a rotation transform which rotates around the X axis.
@@ -2960,7 +2971,7 @@ impl<S: Scalar> Transform3<S> {
     pub fn rotate_x(angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_x(angle);
         let inverse = forward.transpose();
-        Transform3::new(Arc::new(forward), Arc::new(inverse))
+        Transform3::new(forward, inverse)
     }
 
     /// Returns a rotation transform which rotates around the Y axis.
@@ -2968,7 +2979,7 @@ impl<S: Scalar> Transform3<S> {
     pub fn rotate_y(angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_y(angle);
         let inverse = forward.transpose();
-        Transform3::new(Arc::new(forward), Arc::new(inverse))
+        Transform3::new(forward, inverse)
     }
 
     /// Returns a rotation transform which rotates around the Z axis.
@@ -2976,7 +2987,7 @@ impl<S: Scalar> Transform3<S> {
     pub fn rotate_z(angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_z(angle);
         let inverse = forward.transpose();
-        Transform3::new(Arc::new(forward), Arc::new(inverse))
+        Transform3::new(forward, inverse)
     }
 
     /// Returns a rotation transform which rotates around an axis.
@@ -2984,19 +2995,23 @@ impl<S: Scalar> Transform3<S> {
     pub fn rotate_axis(axis: Vector3<S>, angle: S) -> Transform3<S> {
         let forward = Matrix4x4::rotate_axis(axis, angle);
         let inverse = forward.transpose();
-        Transform3::new(Arc::new(forward), Arc::new(inverse))
+        Transform3::new(forward, inverse)
     }
 
     /// Returns a transform which scales by factors in the X, Y and Z dimensions.
     #[inline]
     pub fn scale(sx: S, sy: S, sz: S) -> Transform3<S> {
-        Transform3::new(Arc::new(Matrix4x4::scale(sx, sy, sz)), Arc::new(Matrix4x4::scale(sx.recip(), sy.recip(), sz.recip())))
+        let forward = Matrix4x4::scale(sx, sy, sz);
+        let inverse = Matrix4x4::scale(sx.recip(), sy.recip(), sz.recip());
+        Transform3::new(forward, inverse)
     }
 
     /// Returns a transform which scales uniformly in all dimensions by a factor.
     #[inline]
     pub fn scale_uniform(s: S) -> Transform3<S> {
-        Transform3::new(Arc::new(Matrix4x4::scale_uniform(s)), Arc::new(Matrix4x4::scale_uniform(s.recip())))
+        let forward = Matrix4x4::scale_uniform(s);
+        let inverse = Matrix4x4::scale_uniform(s.recip());
+        Transform3::new(forward, inverse)
     }
 
     // TODO: factory methods for perspective and orthographic projection matrices and transforms
@@ -3006,19 +3021,23 @@ impl<S: Scalar> Transform3<S> {
     pub fn look_at(from: Point3<S>, target: Point3<S>, up: Vector3<S>) -> Result<Transform3<S>, NonInvertibleMatrixError> {
         let inverse = Matrix4x4::inverse_look_at(from, target, up);
         let forward = inverse.inverse()?;
-        Ok(Transform3::new(Arc::new(forward), Arc::new(inverse)))
+        Ok(Transform3::new(forward, inverse))
     }
 
     /// Computes and returns a composite transform, which first applies this and then the other transform.
     #[inline]
     pub fn and_then(&self, transform: &Transform3<S>) -> Transform3<S> {
-        Transform3::new(Arc::new(&*transform.forward * &*self.forward), Arc::new(&*self.inverse * &*transform.inverse))
+        let forward = &transform.forward * &self.forward;
+        let inverse = &self.inverse * &transform.inverse;
+        Transform3::new(forward, inverse)
     }
 
     /// Returns the inverse of this transform.
     #[inline]
     pub fn inverse(&self) -> Transform3<S> {
-        Transform3::new(self.inverse.clone(), self.forward.clone())
+        let forward = self.inverse.clone();
+        let inverse = self.forward.clone();
+        Transform3::new(forward, inverse)
     }
 }
 
@@ -3028,7 +3047,7 @@ impl<S: Scalar> TryFrom<Matrix4x4<S>> for Transform3<S> {
     #[inline]
     fn try_from(forward: Matrix4x4<S>) -> Result<Transform3<S>, NonInvertibleMatrixError> {
         let inverse = forward.inverse()?;
-        Ok(Transform3::new(Arc::new(forward), Arc::new(inverse)))
+        Ok(Transform3::new(forward, inverse))
     }
 }
 
@@ -3606,7 +3625,7 @@ mod tests {
 
     #[test]
     fn matrix3x3_rotate() {
-        let angle = 0.52359877559829887307710723054658381;
+        let angle = std::f64::consts::FRAC_PI_6;
         let m = Matrix3x3d::rotate(angle);
         //@formatter:off
         assert_eq!(m.get(0, 0), angle.cos()); assert_eq!(m.get(0, 1), -angle.sin()); assert_eq!(m.get(0, 2), 0.0);
@@ -3767,70 +3786,79 @@ mod tests {
     }
 
     #[test]
+    fn transform2_new() {
+        let m1 = Matrix3x3d::new([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]);
+        let m2 = Matrix3x3d::new([0.25, -0.75, 0.5, -0.5, 0.25, -0.75, 1.25, -1.75, 1.5]);
+        let t = Transform2d::new(m1.clone(), m2.clone());
+        assert_eq!(t.forward, m1);
+        assert_eq!(t.inverse, m2);
+    }
+
+    #[test]
     fn transform2_identity() {
         let t = Transform2d::identity();
-        assert_eq!(*t.forward, Matrix3x3d::identity());
-        assert_eq!(*t.inverse, Matrix3x3d::identity());
+        assert_eq!(t.forward, Matrix3x3d::identity());
+        assert_eq!(t.inverse, Matrix3x3d::identity());
     }
 
     #[test]
     fn transform2_translate() {
         let v = Vector2d::new(-3.0, 4.0);
         let t = Transform2d::translate(v);
-        assert_eq!(*t.forward, Matrix3x3d::translate(v));
-        assert_eq!(*t.inverse, Matrix3x3d::translate(-v));
+        assert_eq!(t.forward, Matrix3x3d::translate(v));
+        assert_eq!(t.inverse, Matrix3x3d::translate(-v));
     }
 
     #[test]
     fn transform2_rotate() {
-        let angle = 0.52359877559829887307710723054658381;
+        let angle = std::f64::consts::FRAC_PI_6;
         let t = Transform2d::rotate(angle);
-        assert_eq!(*t.forward, Matrix3x3d::rotate(angle));
-        assert_eq!(*t.inverse, Matrix3x3d::rotate(-angle));
+        assert_eq!(t.forward, Matrix3x3d::rotate(angle));
+        assert_eq!(t.inverse, Matrix3x3d::rotate(-angle));
     }
 
     #[test]
     fn transform2_scale() {
         let t = Transform2d::scale(3.25, 2.5);
-        assert_eq!(*t.forward, Matrix3x3d::scale(3.25, 2.5));
-        assert_eq!(*t.inverse, Matrix3x3d::scale(1.0 / 3.25, 1.0 / 2.5));
+        assert_eq!(t.forward, Matrix3x3d::scale(3.25, 2.5));
+        assert_eq!(t.inverse, Matrix3x3d::scale(1.0 / 3.25, 1.0 / 2.5));
     }
 
     #[test]
     fn transform2_scale_uniform() {
         let t = Transform2d::scale_uniform(4.0);
-        assert_eq!(*t.forward, Matrix3x3d::scale_uniform(4.0));
-        assert_eq!(*t.inverse, Matrix3x3d::scale_uniform(1.0 / 4.0));
+        assert_eq!(t.forward, Matrix3x3d::scale_uniform(4.0));
+        assert_eq!(t.inverse, Matrix3x3d::scale_uniform(1.0 / 4.0));
     }
 
     #[test]
     fn transform2_and_then() {
-        let angle = 0.39269908169872415480783042290993786;
+        let angle = std::f64::consts::FRAC_PI_8;
         let v = Vector2d::new(-2.0, 3.0);
         let t = Transform2d::rotate(angle).and_then(&Transform2d::translate(v));
-        assert_eq!(*t.forward, &Matrix3x3d::translate(v) * &Matrix3x3d::rotate(angle));
-        assert_eq!(*t.inverse, &Matrix3x3d::rotate(-angle) * &Matrix3x3d::translate(-v));
+        assert_eq!(t.forward, &Matrix3x3d::translate(v) * &Matrix3x3d::rotate(angle));
+        assert_eq!(t.inverse, &Matrix3x3d::rotate(-angle) * &Matrix3x3d::translate(-v));
     }
 
     #[test]
     fn transform2_inverse() {
-        let t1 = Transform2d::rotate(0.39269908169872415480783042290993786).and_then(&Transform2d::translate(Vector2d::new(-2.0, 3.0)));
+        let t1 = Transform2d::rotate(std::f64::consts::FRAC_PI_8).and_then(&Transform2d::translate(Vector2d::new(-2.0, 3.0)));
         let t2 = t1.inverse();
-        assert_eq!(*t1.forward, *t2.inverse);
-        assert_eq!(*t1.inverse, *t2.forward);
+        assert_eq!(t1.forward, t2.inverse);
+        assert_eq!(t1.inverse, t2.forward);
     }
 
     #[test]
     fn transform2_from_matrix() {
         let m = Matrix3x3d::translate(Vector2d::new(-2.0, 3.0));
         let t = Transform2d::try_from(m.clone()).unwrap();
-        assert_eq!(*t.forward, m);
-        assert_eq!(*t.inverse, m.inverse().unwrap());
+        assert_eq!(t.forward, m);
+        assert_eq!(t.inverse, m.inverse().unwrap());
     }
 
     #[test]
     fn transform_point2() {
-        let angle = 0.39269908169872415480783042290993786;
+        let angle = std::f64::consts::FRAC_PI_8;
         let v = Vector2d::new(-2.0, 3.0);
         let t = Transform2d::rotate(angle).and_then(&Transform2d::translate(v));
         let p = t.transform(Point2d::new(-1.0, 1.0));
@@ -3839,7 +3867,7 @@ mod tests {
 
     #[test]
     fn transform_vector2() {
-        let angle = 0.39269908169872415480783042290993786;
+        let angle = std::f64::consts::FRAC_PI_8;
         let scale = 2.25;
         let t = Transform2d::scale_uniform(scale).and_then(&Transform2d::rotate(angle));
         let v = t.transform(Vector2d::new(-1.0, 1.0));
@@ -3848,7 +3876,7 @@ mod tests {
 
     #[test]
     fn transform_ray2() {
-        let angle = 0.39269908169872415480783042290993786;
+        let angle = std::f64::consts::FRAC_PI_8;
         let v = Vector2d::new(-2.0, 3.0);
         let t = Transform2d::rotate(angle).and_then(&Transform2d::translate(v));
         let origin = Point2d::new(-2.0, 1.5);
