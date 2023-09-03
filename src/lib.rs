@@ -1272,6 +1272,7 @@ impl<S: Scalar> Mul<S> for &Matrix3x3<S> {
 impl Mul<&Matrix3x3f> for f32 {
     type Output = Matrix3x3f;
 
+    #[inline]
     fn mul(self, m: &Matrix3x3f) -> Matrix3x3f {
         m * self
     }
@@ -1280,6 +1281,7 @@ impl Mul<&Matrix3x3f> for f32 {
 impl Mul<&Matrix3x3d> for f64 {
     type Output = Matrix3x3d;
 
+    #[inline]
     fn mul(self, m: &Matrix3x3d) -> Matrix3x3d {
         m * self
     }
@@ -2829,6 +2831,7 @@ impl<S: Scalar> Mul<S> for &Matrix4x4<S> {
 impl Mul<&Matrix4x4f> for f32 {
     type Output = Matrix4x4f;
 
+    #[inline]
     fn mul(self, m: &Matrix4x4f) -> Matrix4x4f {
         m * self
     }
@@ -2837,6 +2840,7 @@ impl Mul<&Matrix4x4f> for f32 {
 impl Mul<&Matrix4x4d> for f64 {
     type Output = Matrix4x4d;
 
+    #[inline]
     fn mul(self, m: &Matrix4x4d) -> Matrix4x4d {
         m * self
     }
