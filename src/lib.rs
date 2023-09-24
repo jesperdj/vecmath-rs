@@ -340,7 +340,7 @@ impl ScalarConst for f32 {
 
     #[inline]
     fn two() -> f32 {
-        2.0f32
+        2f32
     }
 }
 
@@ -352,7 +352,7 @@ impl ScalarConst for f64 {
 
     #[inline]
     fn two() -> f64 {
-        2.0f64
+        2f64
     }
 }
 
@@ -935,24 +935,28 @@ impl<S: Scalar> Transform<&Ray2<S>> for Transform2<S> {
 impl<S: Scalar> BoundingBox2<S> {
     /// Creates and returns a new `BoundingBox2` with minimum and maximum corner points.
     #[inline]
-    pub fn new(min: Point2<S>, max: Point2<S>) -> BoundingBox2<S> {
+    pub fn new(p1: Point2<S>, p2: Point2<S>) -> BoundingBox2<S> {
+        let min = min(p1, p2);
+        let max = max(p1, p2);
         BoundingBox2 { min, max }
     }
 
     /// Returns an empty `BoundingBox2`.
     #[inline]
     pub fn empty() -> BoundingBox2<S> {
-        BoundingBox2::new(
-            Point2::new(S::infinity(), S::infinity()),
-            Point2::new(S::neg_infinity(), S::neg_infinity()))
+        BoundingBox2 {
+            min: Point2::new(S::infinity(), S::infinity()),
+            max: Point2::new(S::neg_infinity(), S::neg_infinity()),
+        }
     }
 
     /// Returns an infinite `BoundingBox2` which contains all of 2D space.
     #[inline]
     pub fn infinite() -> BoundingBox2<S> {
-        BoundingBox2::new(
-            Point2::new(S::neg_infinity(), S::neg_infinity()),
-            Point2::new(S::infinity(), S::infinity()))
+        BoundingBox2 {
+            min: Point2::new(S::neg_infinity(), S::neg_infinity()),
+            max: Point2::new(S::infinity(), S::infinity()),
+        }
     }
 
     /// Returns the width (extent in the X dimension) of this bounding box.
@@ -2390,26 +2394,28 @@ impl<S: Scalar> Transform<&Ray3<S>> for Transform3<S> {
 impl<S: Scalar> BoundingBox3<S> {
     /// Creates and returns a new `BoundingBox3` with minimum and maximum corner points.
     #[inline]
-    pub fn new(min: Point3<S>, max: Point3<S>) -> BoundingBox3<S> {
+    pub fn new(p1: Point3<S>, p2: Point3<S>) -> BoundingBox3<S> {
+        let min = min(p1, p2);
+        let max = max(p1, p2);
         BoundingBox3 { min, max }
     }
 
     /// Returns an empty `BoundingBox3`.
     #[inline]
     pub fn empty() -> BoundingBox3<S> {
-        BoundingBox3::new(
-            Point3::new(S::infinity(), S::infinity(), S::infinity()),
-            Point3::new(S::neg_infinity(), S::neg_infinity(), S::neg_infinity()),
-        )
+        BoundingBox3 {
+            min: Point3::new(S::infinity(), S::infinity(), S::infinity()),
+            max: Point3::new(S::neg_infinity(), S::neg_infinity(), S::neg_infinity()),
+        }
     }
 
     /// Returns an infinite `BoundingBox3` which contains all of 3D space.
     #[inline]
     pub fn infinite() -> BoundingBox3<S> {
-        BoundingBox3::new(
-            Point3::new(S::neg_infinity(), S::neg_infinity(), S::neg_infinity()),
-            Point3::new(S::infinity(), S::infinity(), S::infinity()),
-        )
+        BoundingBox3 {
+            min: Point3::new(S::neg_infinity(), S::neg_infinity(), S::neg_infinity()),
+            max: Point3::new(S::infinity(), S::infinity(), S::infinity()),
+        }
     }
 
     /// Returns the width (extent in the X dimension) of this bounding box.
