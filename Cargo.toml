@@ -1,19 +1,17 @@
 [package]
 name = "vecmath"
-description = "Vector math for graphics applications in Rust"
-version = "0.2.0"
+description = "Vector math for 2D and 3D graphics applications"
+version = "0.3.0"
 authors = ["Jesper de Jong <jespdj@gmail.com>"]
 edition = "2021"
 readme = "README.md"
 license-file = "LICENSE"
 repository = "https://github.com/jesperdj/vecmath-rs"
+keywords = ["gamedev", "graphics"]
+categories = ["game-development", "graphics", "mathematics", "rendering"]
 
 [dependencies]
-num-traits = "0.2.16"
+num-traits = "0.2.19"
 
-[dev-dependencies]
-criterion = { version = "0.5.1", features = ["html_reports"] }
-
-[[bench]]
-name = "vecmath_bench"
-harness = false
+[profile.release]
+lto = true
