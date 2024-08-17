@@ -82,8 +82,14 @@ impl<S: Scalar> Vector2<S> {
 
     /// Creates and returns a new `Vector2` which points in the same direction as this vector, but with length 1.
     #[inline]
-    pub fn normalize(self) -> Vector2<S> {
+    pub fn normalized(self) -> Vector2<S> {
         self / self.length()
+    }
+
+    /// Adjusts this vector to be length 1.
+    #[inline]
+    pub fn normalize(&mut self) {
+        self /= self.length()
     }
 
     /// Returns the dimension with the smallest extent of this vector.
@@ -138,7 +144,7 @@ impl<S: Scalar> Vector2<S> {
 
     /// Returns a point with a permutation of the elements of this vector.
     #[inline]
-    pub fn permute(self, dim_x: Dimension2, dim_y: Dimension2) -> Vector2<S> {
+    pub fn permutation(self, dim_x: Dimension2, dim_y: Dimension2) -> Vector2<S> {
         Vector2::new(self[dim_x], self[dim_y])
     }
 }

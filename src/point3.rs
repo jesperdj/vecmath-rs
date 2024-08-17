@@ -112,7 +112,7 @@ impl<S: Scalar> Point3<S> {
 
     /// Returns a point with a permutation of the elements of this point.
     #[inline]
-    pub fn permute(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Point3<S> {
+    pub fn permutation(self, dim_x: Dimension3, dim_y: Dimension3, dim_z: Dimension3) -> Point3<S> {
         Point3::new(self[dim_x], self[dim_y], self[dim_z])
     }
 }

@@ -122,7 +122,7 @@ impl<S: Scalar> Matrix4x4<S> {
     /// Returns a rotation matrix which rotates around an axis.
     #[inline]
     pub fn rotate_axis(axis: Vector3<S>, angle: S) -> Matrix4x4<S> {
-        let a = axis.normalize();
+        let a = axis.normalized();
 
         let (o, i) = (S::zero(), S::one());
         let (s, c) = angle.sin_cos();
@@ -169,8 +169,8 @@ impl<S: Scalar> Matrix4x4<S> {
     #[inline]
     pub fn inverse_look_at(from: Point3<S>, target: Point3<S>, up: Vector3<S>) -> Matrix4x4<S> {
         let (o, i) = (S::zero(), S::one());
-        let direction = (target - from).normalize();
-        let right = up.normalize().cross(direction).normalize();
+        let direction = (target - from).normalized();
+        let right = up.normalized().cross(direction).normalized();
         let new_up = direction.cross(right);
 
         Matrix4x4::new([
