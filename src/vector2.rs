@@ -88,7 +88,7 @@ impl<S: Scalar> Vector2<S> {
 
     /// Adjusts this vector to be length 1.
     #[inline]
-    pub fn normalize(&mut self) {
+    pub fn normalize(mut self) {
         self /= self.length()
     }
 
