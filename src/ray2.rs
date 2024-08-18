@@ -45,7 +45,7 @@ pub fn ray2d(origin: Point2d, direction: Vector2d) -> Ray2d {
 
 /// Trait for types for which an intersection with a `Ray2` can be computed.
 pub trait RayIntersection2<S: Scalar> {
-    fn intersect(self, ray: &Ray2<S>, range: Range<S>) -> Option<Range<S>>;
+    fn intersect(self, ray: &Ray2<S>, range: &Range<S>) -> Option<Range<S>>;
 }
 
 // ===== Ray2 ==================================================================================================================================================

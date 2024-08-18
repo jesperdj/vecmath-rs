@@ -45,7 +45,7 @@ pub fn ray3d(origin: Point3d, direction: Vector3d) -> Ray3d {
 
 /// Trait for types for which an intersection with a `Ray3` can be computed.
 pub trait RayIntersection3<S: Scalar> {
-    fn intersect(self, ray: &Ray3<S>, range: Range<S>) -> Option<Range<S>>;
+    fn intersect(self, ray: &Ray3<S>, range: &Range<S>) -> Option<Range<S>>;
 }
 
 // ===== Ray3 ==================================================================================================================================================

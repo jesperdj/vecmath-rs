@@ -193,7 +193,7 @@ impl<S: Scalar> RayIntersection2<S> for &BoundingBox2<S> {
     /// Computes the intersections of this bounding box with a ray.
     ///
     /// Returns a `Some` containing the range in which the ray intersects the bounding box, or `None` if the ray does not intersect the bounding box.
-    fn intersect(self, ray: &Ray2<S>, range: Range<S>) -> Option<Range<S>> {
+    fn intersect(self, ray: &Ray2<S>, range: &Range<S>) -> Option<Range<S>> {
         let (start, end) = (range.start, range.end);
 
         let d1 = (self.min.x - ray.origin.x) / ray.direction.x;
