@@ -378,7 +378,7 @@ impl<S: Scalar> Transform<&Ray2<S>> for Transform2<S> {
     /// Transforms a ray.
     #[inline]
     fn transform(&self, ray: &Ray2<S>) -> Ray2<S> {
-        Ray2::new(self.transform(ray.origin), self.transform(ray.direction))
+        Ray2::new(self.transform(ray.origin), self.transform(ray.direction).normalized())
     }
 }
 
