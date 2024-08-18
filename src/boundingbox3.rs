@@ -14,7 +14,7 @@
 
 use std::ops::Range;
 
-use crate::{Dimension3, Intersection, max, min, Point3, Ray3, Scalar, Union, Vector3};
+use crate::{max, min, Dimension3, Intersection, Point3, Ray3, RayIntersection3, Scalar, Union, Vector3};
 
 /// Axis-aligned bounding box in 3D space.
 #[derive(Clone, PartialEq, Debug)]
@@ -206,14 +206,12 @@ impl<S: Scalar> Intersection<&BoundingBox3<S>> for &BoundingBox3<S> {
     }
 }
 
-impl<S: Scalar> Intersection<&Ray3<S>> for &BoundingBox3<S> {
-    type Output = Range<S>;
-
+impl<S: Scalar> RayIntersection3<S> for &BoundingBox3<S> {
     /// Computes the intersections of this bounding box with a ray.
     ///
     /// Returns a `Some` containing the range in which the ray intersects the bounding box, or `None` if the ray does not intersect the bounding box.
-    fn intersect(self, ray: &Ray3<S>) -> Option<Range<S>> {
-        let (start, end) = (S::zero(), S::infinity());
+    fn intersect(self, ray: &Ray3<S>, range: Range<S>) -> Option<Range<S>> {
+        let (start, end) = (range.start, range.end);
 
         let d1 = (self.min.x - ray.origin.x) / ray.direction.x;
         let d2 = (self.max.x - ray.origin.x) / ray.direction.x;
@@ -221,9 +219,7 @@ impl<S: Scalar> Intersection<&Ray3<S>> for &BoundingBox3<S> {
         let start = max(start, min(d1, d2));
         let end = min(end, max(d1, d2));
 
-        if start > end {
-            return None;
-        }
+        if start > end { return None; }
 
         let d1 = (self.min.y - ray.origin.y) / ray.direction.y;
         let d2 = (self.max.y - ray.origin.y) / ray.direction.y;
@@ -231,9 +227,7 @@ impl<S: Scalar> Intersection<&Ray3<S>> for &BoundingBox3<S> {
         let start = max(start, min(d1, d2));
         let end = min(end, max(d1, d2));
 
-        if start > end {
-            return None;
-        }
+        if start > end { return None; }
 
         let d1 = (self.min.z - ray.origin.z) / ray.direction.z;
         let d2 = (self.max.z - ray.origin.z) / ray.direction.z;
@@ -241,10 +235,6 @@ impl<S: Scalar> Intersection<&Ray3<S>> for &BoundingBox3<S> {
         let start = max(start, min(d1, d2));
         let end = min(end, max(d1, d2));
 
-        if start <= end {
-            Some(start..end)
-        } else {
-            None
-        }
+        if start < end { Some(start..end) } else { None }
     }
 }

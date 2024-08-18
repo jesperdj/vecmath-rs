@@ -14,7 +14,7 @@
 
 use std::ops::Range;
 
-use crate::{Dimension2, Intersection, max, min, Point2, Ray2, Scalar, Union, Vector2};
+use crate::{max, min, Dimension2, Intersection, Point2, Ray2, RayIntersection2, Scalar, Union, Vector2};
 
 /// Axis-aligned bounding box in 2D space.
 #[derive(Clone, PartialEq, Debug)]
@@ -189,14 +189,12 @@ impl<S: Scalar> Intersection<&BoundingBox2<S>> for &BoundingBox2<S> {
     }
 }
 
-impl<S: Scalar> Intersection<&Ray2<S>> for &BoundingBox2<S> {
-    type Output = Range<S>;
-
+impl<S: Scalar> RayIntersection2<S> for &BoundingBox2<S> {
     /// Computes the intersections of this bounding box with a ray.
     ///
     /// Returns a `Some` containing the range in which the ray intersects the bounding box, or `None` if the ray does not intersect the bounding box.
-    fn intersect(self, ray: &Ray2<S>) -> Option<Range<S>> {
-        let (start, end) = (S::zero(), S::infinity());
+    fn intersect(self, ray: &Ray2<S>, range: Range<S>) -> Option<Range<S>> {
+        let (start, end) = (range.start, range.end);
 
         let d1 = (self.min.x - ray.origin.x) / ray.direction.x;
         let d2 = (self.max.x - ray.origin.x) / ray.direction.x;
@@ -204,9 +202,7 @@ impl<S: Scalar> Intersection<&Ray2<S>> for &BoundingBox2<S> {
         let start = max(start, min(d1, d2));
         let end = min(end, max(d1, d2));
 
-        if start > end {
-            return None;
-        }
+        if start > end { return None; }
 
         let d1 = (self.min.y - ray.origin.y) / ray.direction.y;
         let d2 = (self.max.y - ray.origin.y) / ray.direction.y;
@@ -214,10 +210,6 @@ impl<S: Scalar> Intersection<&Ray2<S>> for &BoundingBox2<S> {
         let start = max(start, min(d1, d2));
         let end = min(end, max(d1, d2));
 
-        if start <= end {
-            Some(start..end)
-        } else {
-            None
-        }
+        if start < end { Some(start..end) } else { None }
     }
 }

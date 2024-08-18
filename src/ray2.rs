@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::{Point2, Point2d, Point2f, Scalar, Vector2, Vector2d, Vector2f};
+use std::ops::Range;
 
 /// Ray in 2D space.
 #[derive(Clone, PartialEq, Debug)]
@@ -40,6 +41,11 @@ pub fn ray2f(origin: Point2f, direction: Vector2f) -> Ray2f {
 #[inline]
 pub fn ray2d(origin: Point2d, direction: Vector2d) -> Ray2d {
     Ray2d::new(origin, direction)
+}
+
+/// Trait for types for which an intersection with a `Ray2` can be computed.
+pub trait RayIntersection2<S: Scalar> {
+    fn intersect(self, ray: &Ray2<S>, range: Range<S>) -> Option<Range<S>>;
 }
 
 // ===== Ray2 ==================================================================================================================================================

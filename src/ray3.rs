@@ -13,6 +13,7 @@
 // limitations under the License.
 
 use crate::{Point3, Point3d, Point3f, Scalar, Vector3, Vector3d, Vector3f};
+use std::ops::Range;
 
 /// Ray in 3D space.
 #[derive(Clone, PartialEq, Debug)]
@@ -40,6 +41,11 @@ pub fn ray3f(origin: Point3f, direction: Vector3f) -> Ray3f {
 #[inline]
 pub fn ray3d(origin: Point3d, direction: Vector3d) -> Ray3d {
     Ray3d::new(origin, direction)
+}
+
+/// Trait for types for which an intersection with a `Ray3` can be computed.
+pub trait RayIntersection3<S: Scalar> {
+    fn intersect(self, ray: &Ray3<S>, range: Range<S>) -> Option<Range<S>>;
 }
 
 // ===== Ray3 ==================================================================================================================================================
