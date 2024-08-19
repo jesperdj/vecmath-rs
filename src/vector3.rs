@@ -14,7 +14,7 @@
 
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::{CrossProduct, Dimension3, dot, DotProduct, Length, max, min, MinMax, Point3, RelativeLength, Scalar};
+use crate::{dot, max, min, CrossProduct, Dimension3, DotProduct, Length, MinMax, Point3, RelativeLength, Scalar};
 
 /// Vector in 3D space.
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -366,5 +366,18 @@ impl<S: Scalar> From<Point3<S>> for Vector3<S> {
     #[inline]
     fn from(p: Point3<S>) -> Vector3<S> {
         Vector3::new(p.x, p.y, p.z)
+    }
+}
+
+impl<S: Scalar> From<&(S, S, S)> for Vector3<S> {
+    fn from(value: &(S, S, S)) -> Self {
+        Vector3::new(value.0, value.1, value.2)
+    }
+}
+
+impl<S: Scalar> From<&[S]> for Vector3<S> {
+    #[inline]
+    fn from(value: &[S]) -> Self {
+        Vector3::new(value[0], value[1], value[2])
     }
 }
