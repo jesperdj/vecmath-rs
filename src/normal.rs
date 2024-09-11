@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{Dimension3, DotProduct, Length, MinMax, RelativeLength, Scalar, Vector3};
+use crate::{Dimension3, DotProduct, Length, MinMax, Point3, RelativeLength, Scalar, Vector3};
 use num_traits::{ConstZero, Zero};
 use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign};
@@ -383,6 +383,16 @@ impl<S: Scalar> From<Vector3<S>> for Normal3<S> {
             x: vector.x,
             y: vector.y,
             z: vector.z,
+        }
+    }
+}
+
+impl<S: Scalar> From<Point3<S>> for Normal3<S> {
+    fn from(point: Point3<S>) -> Self {
+        Normal3 {
+            x: point.x,
+            y: point.y,
+            z: point.z,
         }
     }
 }
