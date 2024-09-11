@@ -12,46 +12,47 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub use boundingbox2::*;
-pub use boundingbox3::*;
-pub use cross::*;
-pub use dimension2::*;
-pub use dimension3::*;
-pub use distance::*;
-pub use dot::*;
-pub use intersection::*;
-pub use length::*;
-pub use minmax::*;
-pub use point2::*;
-pub use point3::*;
-pub use ray2::*;
-pub use ray3::*;
-pub use scalar::*;
-pub use transform::*;
-pub use transform2::*;
-pub use transform3::*;
-pub use union::*;
-pub use vector2::*;
-pub use vector3::*;
+//! Vector math for 2D and 3D graphics applications.
+//!
+//! The main structs in this crate are [Vector2], [Vector3], [Point2], [Point3], [Transform2] and [Transform3].
+//! These are used to represent vectors, points and transformations in 2D and 3D space.
+//! They are generic over the element type, which must conform to the trait [Scalar]. In practice this means you can create vectors, points and transforms
+//! with `f32` and `f64` elements.
+//!
+//! Other structs are [Normal3] to represent surface normals in 3D space, [Angle] to represent angles in radians or degrees, [Ray2] and [Ray3] which represent
+//! rays and [BoundingBox2] and [BoundingBox3] which represent axis-aligned bounding boxes.
+//!
+//! There are also [Matrix3x3] and [Matrix4x4] structs for transformation matrices. For transformations, you should however use [Transform2] and [Transform3]
+//! which provide convenient `transform()` methods for transforming vectors, points, normals, rays and bounding boxes.
 
-mod boundingbox2;
-mod boundingbox3;
-mod cross;
-mod dimension2;
-mod dimension3;
+mod angle;
+mod boundingbox;
+mod dimension;
 mod distance;
 mod dot;
-mod intersection;
 mod length;
+mod matrix;
 mod minmax;
-mod point2;
-mod point3;
-mod ray2;
-mod ray3;
+mod normal;
+mod point;
+mod ray;
 mod scalar;
 mod transform;
-mod transform2;
-mod transform3;
 mod union;
-mod vector2;
-mod vector3;
+mod vector;
+
+pub use angle::*;
+pub use boundingbox::*;
+pub use dimension::*;
+pub use distance::*;
+pub use dot::*;
+pub use length::*;
+pub use matrix::*;
+pub use minmax::*;
+pub use normal::*;
+pub use point::*;
+pub use ray::*;
+pub use scalar::*;
+pub use transform::*;
+pub use union::*;
+pub use vector::*;

@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// Dimension in 3D space.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+/// A dimension in 2D space.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub enum Dimension2 { X, Y }
+
+/// A dimension in 3D space.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum Dimension3 { X, Y, Z }

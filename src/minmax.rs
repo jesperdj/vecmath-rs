@@ -19,16 +19,22 @@ pub trait MinMax: Copy {
 
     /// Compares and returns the maximum of two values.
     fn max(self, other: Self) -> Self;
+
+    /// Compares two values and returns the minimum and maximum value.
+    fn min_max(self, other: Self) -> (Self, Self);
 }
 
 /// Compares and returns the minimum of two values.
-#[inline]
-pub fn min<T: MinMax>(value: T, other: T) -> T {
-    value.min(other)
+pub fn min<T: MinMax>(first: T, second: T) -> T {
+    first.min(second)
 }
 
 /// Compares and returns the maximum of two values.
-#[inline]
-pub fn max<T: MinMax>(value: T, other: T) -> T {
-    value.max(other)
+pub fn max<T: MinMax>(first: T, second: T) -> T {
+    first.max(second)
+}
+
+/// Compares two values and returns the minimum and maximum value.
+pub fn min_max<T: MinMax>(first: T, second: T) -> (T, T) {
+    first.min_max(second)
 }

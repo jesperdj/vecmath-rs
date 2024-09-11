@@ -1,17 +1,20 @@
 [package]
 name = "vecmath"
-description = "Vector math for 2D and 3D graphics applications"
-version = "0.3.0"
+description = "Vector math for 2D and 3D graphics"
+version = "0.4.0"
 authors = ["Jesper de Jong <jespdj@gmail.com>"]
 edition = "2021"
 readme = "README.md"
-license-file = "LICENSE"
-repository = "https://github.com/jesperdj/vecmath-rs"
+license = "Apache-2.0"
 keywords = ["gamedev", "graphics"]
 categories = ["game-development", "graphics", "mathematics", "rendering"]
 
 [dependencies]
 num-traits = "0.2.19"
+rand = { version = "0.8.5", optional = true }
 
-[profile.release]
-lto = true
+[dev-dependencies]
+rand = "0.8.5"
+
+[features]
+rand = ["dep:rand"]

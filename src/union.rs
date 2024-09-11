@@ -13,7 +13,7 @@
 // limitations under the License.
 
 /// Trait for types for which a union with a value can be computed.
-pub trait Union<U: Copy>: Copy {
+pub trait Union<U = Self> {
     /// The output type which represents the union between values.
     type Output;
 
@@ -22,7 +22,6 @@ pub trait Union<U: Copy>: Copy {
 }
 
 /// Computes and returns the union between two values.
-#[inline]
-pub fn union<T: Union<U>, U: Copy>(value: T, other: U) -> T::Output {
-    value.union(other)
+pub fn union<T: Union<U>, U>(first: T, second: U) -> T::Output {
+    first.union(second)
 }

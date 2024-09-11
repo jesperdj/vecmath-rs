@@ -1,14 +1,12 @@
-# Vector math for 2D and 3D graphics applications
+# Vector math for 2D and 3D graphics applications.
 
-Main structs: `Scalar`, `Point2`, `Vector2`, `Ray2`, `BoundingBox2` and `Point3`, `Vector3`, `Ray3`, `BoundingBox3`.
+The main structs in this crate are `Vector2`, `Vector3`, `Point2`, `Point3`, `Transform2` and `Transform3`.
+These are used to represent vectors, points and transformations in 2D and 3D space.
+They are generic over the element type, which must conform to the trait `Scalar`. In practice this means you can create vectors, points and transforms
+with `f32` and `f64` elements.
 
-Structs for transforms: `Transform2` and `Transform3`.
+Other structs are `Normal3` to represent surface normals in 3D space, `Angle` to represent angles in radians or degrees, `Ray2` and `Ray3` which represent
+rays and `BoundingBox2` and `BoundingBox3` which represent axis-aligned bounding boxes.
 
-A bunch of traits to support these:
-- `Distance` and `RelativeDistance` (implemented for `Point2` and `Point3`).
-- `Length` and `RelativeLength` (implemented for `Vector2` and `Vector3`).
-- `DotProduct` (implemented for `Vector2` and `Vector3`).
-- `CrossProduct` (implemented for `Vector3`).
-- `Intersection` and `Union` (implemented for `BoundingBox2` and `BoundingBox3`).
-- `MinMax` for things that have `min()` and `max()` methods.
-- `Transform` for things that can be transformed with a `Transform2` or `Transform3`.
+There are also `Matrix3x3` and `Matrix4x4` structs for transformation matrices. For transformations, you should however use `Transform2` and `Transform3`
+which provide convenient `transform()` methods for transforming vectors, points, normals, rays and bounding boxes.

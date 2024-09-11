@@ -12,17 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::Scalar;
+
 /// Trait for types for which a dot product between values can be computed.
-pub trait DotProduct<U: Copy>: Copy {
-    /// The output type which expresses the dot product between values.
-    type Output;
-
+pub trait DotProduct<S: Scalar, U = Self> {
     /// Computes and returns the dot product between two values.
-    fn dot(self, other: U) -> Self::Output;
-}
-
-/// Computes and returns the dot product between two values.
-#[inline]
-pub fn dot<T: DotProduct<U>, U: Copy>(value: T, other: U) -> T::Output {
-    value.dot(other)
+    fn dot(self, other: U) -> S;
 }

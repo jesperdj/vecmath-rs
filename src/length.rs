@@ -12,44 +12,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::Scalar;
+use std::cmp::Ordering;
+
 /// Trait for types for which a length can be computed.
-pub trait Length: Copy {
-    /// The output type which expresses the length of a value.
-    type Output;
-
+pub trait Length<S: Scalar>: Copy {
     /// Computes and returns the length of a value.
-    fn length(self) -> Self::Output;
-}
-
-/// Computes and returns the length of a value.
-#[inline]
-pub fn length<T: Length>(value: T) -> T::Output {
-    value.length()
+    fn length(self) -> S;
 }
 
 /// Trait for types for which lengths can be compared.
-pub trait RelativeLength: Copy {
-    /// Returns `true` if this value is shorter than the other value.
-    fn is_shorter_than(self, other: Self) -> bool;
+pub trait RelativeLength<S: Scalar>: Length<S> {
+    /// Compares the length of this value with the length of `other` and returns an `Ordering`.
+    ///
+    /// # Example
+    /// ```
+    /// use std::cmp::Ordering;
+    /// use vecmath::{RelativeLength, Vector2};
+    ///
+    /// let v1 = Vector2::new(3.0, 4.0);
+    /// let v2 = Vector2::new(-2.0, 3.5);
+    ///
+    /// match v1.cmp_length(v2) {
+    ///     Ordering::Less => println!("v1 is shorter than v2"),
+    ///     Ordering::Equal => println!("v1 has the same length as v2"),
+    ///     Ordering::Greater => println!("v1 is longer than v2"),
+    /// }
+    /// ```
+    fn cmp_length(self, other: Self) -> Ordering;
 
-    /// Returns `true` if this value is longer than the other value.
-    fn is_longer_than(self, other: Self) -> bool;
+    /// Returns `true` if this value is shorter than `other`, `false` otherwise.
+    fn is_shorter_than(self, other: Self) -> bool {
+        self.cmp_length(other) == Ordering::Less
+    }
 
-    /// Returns the shortest of two values.
-    fn shortest(self, other: Self) -> Self;
-
-    /// Returns the longest of two values.
-    fn longest(self, other: Self) -> Self;
+    /// Returns `true` if this value is longer than `other`, `false` otherwise.
+    fn is_longer_than(self, other: Self) -> bool {
+        self.cmp_length(other) == Ordering::Greater
+    }
 }
 
-/// Returns the shortest of two values.
-#[inline]
-pub fn shortest<T: RelativeLength>(value: T, other: T) -> T {
-    value.shortest(other)
+/// Compares the length of two values and returns the shortest one.
+///
+/// If `first` and `second` are equally long, `first` is returned.
+pub fn shortest<T: RelativeLength<S>, S: Scalar>(first: T, second: T) -> T {
+    if first.is_longer_than(second) { second } else { first }
 }
 
-/// Returns the longest of two values.
-#[inline]
-pub fn longest<T: RelativeLength>(value: T, other: T) -> T {
-    value.longest(other)
+/// Compares the length of two values and returns the longest one.
+///
+/// If `first` and `second` are equally long, `first` is returned.
+pub fn longest<T: RelativeLength<S>, S: Scalar>(first: T, second: T) -> T {
+    if first.is_shorter_than(second) { second } else { first }
 }
