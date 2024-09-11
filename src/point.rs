@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::{Dimension2, Dimension3, Distance, Length, MinMax, RelativeDistance, RelativeLength, Scalar, Vector2, Vector3};
+use crate::{Dimension2, Dimension3, Distance, Length, MinMax, Normal3, RelativeDistance, RelativeLength, Scalar, Vector2, Vector3};
 use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Index, IndexMut, Sub, SubAssign};
 
@@ -499,6 +499,16 @@ impl<S: Scalar> From<Vector3<S>> for Point3<S> {
             x: vector.x,
             y: vector.y,
             z: vector.z,
+        }
+    }
+}
+
+impl<S: Scalar> From<Normal3<S>> for Point3<S> {
+    fn from(normal: Normal3<S>) -> Point3<S> {
+        Point3 {
+            x: normal.x,
+            y: normal.y,
+            z: normal.z,
         }
     }
 }
