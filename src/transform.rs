@@ -151,11 +151,11 @@ impl<S: Scalar> Transform<Point2<S>> for Transform2<S> {
     }
 }
 
-impl<S: Scalar> Transform<Ray2<S>> for Transform2<S> {
+impl<S: Scalar> Transform<&Ray2<S>> for Transform2<S> {
     type Output = Ray2<S>;
 
     /// Transforms a ray.
-    fn transform(&self, ray: Ray2<S>) -> Ray2<S> {
+    fn transform(&self, ray: &Ray2<S>) -> Ray2<S> {
         let origin = self.transform(ray.origin);
         let direction = self.transform(ray.direction);
 
@@ -167,7 +167,7 @@ impl<S: Scalar> Transform<Ray2<S>> for Transform2<S> {
     }
 
     /// Transforms a ray with the inverse transform.
-    fn inverse_transform(&self, ray: Ray2<S>) -> Ray2<S> {
+    fn inverse_transform(&self, ray: &Ray2<S>) -> Ray2<S> {
         let origin = self.inverse_transform(ray.origin);
         let direction = self.inverse_transform(ray.direction);
 
@@ -179,16 +179,16 @@ impl<S: Scalar> Transform<Ray2<S>> for Transform2<S> {
     }
 }
 
-impl<S: Scalar> Transform<BoundingBox2<S>> for Transform2<S> {
+impl<S: Scalar> Transform<&BoundingBox2<S>> for Transform2<S> {
     type Output = BoundingBox2<S>;
 
     /// Transforms a bounding box.
-    fn transform(&self, bb: BoundingBox2<S>) -> BoundingBox2<S> {
+    fn transform(&self, bb: &BoundingBox2<S>) -> BoundingBox2<S> {
         BoundingBox2::from_corner_and_diagonal(self.transform(bb.min), self.transform(bb.diagonal()))
     }
 
     /// Transforms a bounding box with the inverse transform.
-    fn inverse_transform(&self, bb: BoundingBox2<S>) -> BoundingBox2<S> {
+    fn inverse_transform(&self, bb: &BoundingBox2<S>) -> BoundingBox2<S> {
         BoundingBox2::from_corner_and_diagonal(self.inverse_transform(bb.min), self.inverse_transform(bb.diagonal()))
     }
 }
@@ -361,11 +361,11 @@ impl<S: Scalar> Transform<Normal3<S>> for Transform3<S> {
     }
 }
 
-impl<S: Scalar> Transform<Ray3<S>> for Transform3<S> {
+impl<S: Scalar> Transform<&Ray3<S>> for Transform3<S> {
     type Output = Ray3<S>;
 
     /// Transforms a ray.
-    fn transform(&self, ray: Ray3<S>) -> Ray3<S> {
+    fn transform(&self, ray: &Ray3<S>) -> Ray3<S> {
         let origin = self.transform(ray.origin);
         let direction = self.transform(ray.direction);
 
@@ -377,7 +377,7 @@ impl<S: Scalar> Transform<Ray3<S>> for Transform3<S> {
     }
 
     /// Transforms a ray with the inverse transform.
-    fn inverse_transform(&self, ray: Ray3<S>) -> Ray3<S> {
+    fn inverse_transform(&self, ray: &Ray3<S>) -> Ray3<S> {
         let origin = self.inverse_transform(ray.origin);
         let direction = self.inverse_transform(ray.direction);
 
@@ -389,16 +389,16 @@ impl<S: Scalar> Transform<Ray3<S>> for Transform3<S> {
     }
 }
 
-impl<S: Scalar> Transform<BoundingBox3<S>> for Transform3<S> {
+impl<S: Scalar> Transform<&BoundingBox3<S>> for Transform3<S> {
     type Output = BoundingBox3<S>;
 
     /// Transforms a bounding box.
-    fn transform(&self, bb: BoundingBox3<S>) -> BoundingBox3<S> {
+    fn transform(&self, bb: &BoundingBox3<S>) -> BoundingBox3<S> {
         BoundingBox3::from_corner_and_diagonal(self.transform(bb.min), self.transform(bb.diagonal()))
     }
 
     /// Transforms a bounding box with the inverse transform.
-    fn inverse_transform(&self, bb: BoundingBox3<S>) -> BoundingBox3<S> {
+    fn inverse_transform(&self, bb: &BoundingBox3<S>) -> BoundingBox3<S> {
         BoundingBox3::from_corner_and_diagonal(self.inverse_transform(bb.min), self.inverse_transform(bb.diagonal()))
     }
 }
