@@ -34,9 +34,50 @@ pub struct Normal3<S: Scalar> {
 // ===== Normal3 ===============================================================================================================================================
 
 impl<S: Scalar> Normal3<S> {
+    /// Normal that represents the X axis: (1, 0, 0).
+    pub const X_AXIS: Normal3<S> = Normal3 { x: S::ONE, y: S::ZERO, z: S::ZERO };
+
+    /// Normal that represents the Y axis: (0, 1, 0).
+    pub const Y_AXIS: Normal3<S> = Normal3 { x: S::ZERO, y: S::ONE, z: S::ZERO };
+
+    /// Normal that represents the Z axis: (0, 0, 1).
+    pub const Z_AXIS: Normal3<S> = Normal3 { x: S::ZERO, y: S::ZERO, z: S::ONE };
+
     /// Creates and returns a new normal.
     pub fn new(x: S, y: S, z: S) -> Normal3<S> {
         Normal3 { x, y, z }
+    }
+
+    /// Returns a normal that represents the X axis.
+    pub fn x_axis() -> Normal3<S> {
+        Normal3::X_AXIS
+    }
+
+    /// Returns a normal that represents the Y axis.
+    pub fn y_axis() -> Normal3<S> {
+        Normal3::Y_AXIS
+    }
+
+    /// Returns a normal that represents the Z axis.
+    pub fn z_axis() -> Normal3<S> {
+        Normal3::Z_AXIS
+    }
+
+    /// Returns a normal that represents the axis corresponding to `dimension`.
+    ///
+    /// # Example
+    /// ```
+    /// use vecmath::{Dimension3, Normal2, Normal3};
+    ///
+    /// let x_axis: Normal3<f32> = Normal3::axis(Dimension3::X);
+    /// println!("{:?}", x_axis); // prints: Normal3 { x: 1.0, y: 0.0, z: 0.0 }
+    /// ```
+    pub fn axis(dimension: Dimension3) -> Normal3<S> {
+        match dimension {
+            Dimension3::X => Normal3::X_AXIS,
+            Dimension3::Y => Normal3::Y_AXIS,
+            Dimension3::Z => Normal3::Z_AXIS,
+        }
     }
 
     /// Returns a normal that points in the same direction as this normal but with length 1.
