@@ -67,7 +67,7 @@ impl<S: Scalar> Normal3<S> {
     ///
     /// # Example
     /// ```
-    /// use vecmath::{Dimension3, Normal2, Normal3};
+    /// use vecmath::{Dimension3, Normal3};
     ///
     /// let x_axis: Normal3<f32> = Normal3::axis(Dimension3::X);
     /// println!("{:?}", x_axis); // prints: Normal3 { x: 1.0, y: 0.0, z: 0.0 }
